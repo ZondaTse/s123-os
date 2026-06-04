@@ -14,16 +14,20 @@ function nowStamp() {
   return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function kuaimaiSign(params) {
+function kuaimaiSign(params, method = 'hmac') {
   const keys = Object.keys(params)
     .filter(k => k !== 'sign' && params[k] !== null && params[k] !== undefined && params[k] !== '')
     .sort();
   let base = '';
   for (const k of keys) base += k + params[k];
-  return crypto.createHmac('sha256', KM_SECRET).update(base).digest('hex').toUpperCase();
+  if (method === 'hmac-sha256') {
+    return crypto.createHmac('sha256', KM_SECRET).update(base).digest('hex').toUpperCase();
+  }
+  // 默认 hmac (hmac-md5)
+  return crypto.createHmac('md5', KM_SECRET).update(base).digest('hex').toUpperCase();
 }
 
-function kuaimaiRequest(method, extraParams) {
+function kuaimaiRequest(method, extraParams, signMethod = 'hmac') {
   return new Promise((resolve, reject) => {
     const params = {
       method,
@@ -32,10 +36,10 @@ function kuaimaiRequest(method, extraParams) {
       timestamp: nowStamp(),
       format: 'json',
       version: '1.0',
-      sign_method: 'hmac-sha256',
+      sign_method: signMethod,
       ...extraParams,
     };
-    params.sign = kuaimaiSign(params);
+    params.sign = kuaimaiSign(params, signMethod);
 
     const body = Object.keys(params)
       .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
@@ -81,29 +85,44 @@ router.get('/goods', auth, async (req, res) => {
   try {
     let found = null;
     let lastData = null;
+    let permError = false;
 
-    for (const extraParams of queries) {
+    // 先用hmac，再用hmac-sha256，每种都试outerId和goodsNo
+    const attempts = [
+      { sign: 'hmac',       params: { outerId: sku } },
+      { sign: 'hmac',       params: { goodsNo: sku } },
+      { sign: 'hmac-sha256', params: { outerId: sku } },
+      { sign: 'hmac-sha256', params: { goodsNo: sku } },
+    ];
+
+    for (const { sign, params: extraParams } of attempts) {
       const data = await kuaimaiRequest('erp.goods.list.query', {
         ...extraParams,
         pageNo: 1,
         pageSize: 10,
-      });
+      }, sign);
       lastData = data;
 
       if (!data.success) {
-        // 权限不足时直接返回错误，不继续尝试
-        if (data.code === '27' || (data.msg || '').includes('权限')) {
-          return res.status(403).json({
-            error: '快麦商品接口权限不足，请在快麦开放平台申请 erp.goods.list.query 接口权限',
-            code: data.code,
-            tip: '申请地址：https://open.kuaima.cn → 开发者中心 → 您的APP → 申请接口'
-          });
+        const msg = data.msg || '';
+        // 真正的权限问题才停止
+        if (data.code === '27' || msg.includes('未授权') || msg.includes('没有权限')) {
+          permError = true;
+          break;
         }
+        // 签名错误继续尝试下一种
         continue;
       }
 
       const list = data.goodsList || data.list || [];
       if (list.length) { found = list[0]; break; }
+    }
+
+    if (permError) {
+      return res.status(403).json({
+        error: '快麦接口无权限，请检查accessToken是否包含商品查询权限',
+        raw: lastData,
+      });
     }
 
     if (!found) {
@@ -181,3 +200,22 @@ router.post('/sync-product', auth, async (req, res) => {
 });
 
 module.exports = router;
+
+// 临时调试：GET /api/kuaima/debug?sku=xxx 返回所有尝试的原始结果
+
+router.get('/debug', auth, async (req, res) => {
+  const sku = (req.query.sku || '').trim();
+  if (!sku) return res.status(400).json({ error: '请提供sku参数' });
+  const results = [];
+  for (const sign of ['hmac', 'hmac-sha256']) {
+    for (const [key, val] of [['outerId', sku], ['goodsNo', sku]]) {
+      try {
+        const data = await kuaimaiRequest('erp.goods.list.query', { [key]: val, pageNo: 1, pageSize: 3 }, sign);
+        results.push({ sign, key, val, success: data.success, code: data.code, msg: data.msg, count: (data.goodsList||data.list||[]).length, sample: (data.goodsList||data.list||[])[0] || null });
+      } catch(e) {
+        results.push({ sign, key, val, error: e.message });
+      }
+    }
+  }
+  res.json({ results });
+});
