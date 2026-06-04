@@ -26,7 +26,7 @@ const Wealth = {
   render() {
     const el = document.getElementById('wealth-content');
     if (!el) return;
-    document.getElementById('header-title').textContent = '发财';
+    
 
     const t = State.gmv || {}, m = State.monthly || {};
     const latestMoment = this.moments[0];
@@ -116,7 +116,7 @@ const Wealth = {
   // ── 发财圈 ──
   showMomentsPage() {
     const el = document.getElementById('wealth-content');
-    document.getElementById('header-title').textContent = '发财圈';
+    
     el.innerHTML = `
       ${this.backBtn('发财圈')}
       <div style="display:flex;justify-content:flex-end;padding:0 16px 10px">
@@ -227,7 +227,7 @@ const Wealth = {
   // ── GMV详情 ──
   showGMVPage() {
     const el = document.getElementById('wealth-content');
-    document.getElementById('header-title').textContent = 'GMV详情';
+    
     const t = State.gmv||{}, m = State.monthly||{}, report = t.report||{};
     el.innerHTML = `
       ${this.backBtn('GMV详情')}
@@ -280,7 +280,7 @@ const Wealth = {
   // ── 商品中心 ──
   showProductsPage() {
     const el = document.getElementById('wealth-content');
-    document.getElementById('header-title').textContent = '商品中心';
+    
     const statusLabel = { new:'新品', hot:'爆款', stable:'普通', sleeping:'待清货', zombie:'停售' };
     const statusColor = { new:'#1677ff', hot:'#ff8f1f', stable:'#07c160', sleeping:'#999', zombie:'#fa5151' };
     el.innerHTML = `
