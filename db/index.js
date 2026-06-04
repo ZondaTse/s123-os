@@ -137,6 +137,24 @@ function init() {
       action TEXT PRIMARY KEY,
       points INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS moments (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id),
+      content    TEXT NOT NULL DEFAULT '',
+      image_url  TEXT,
+      product_id INTEGER REFERENCES products(id),
+      likes      TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+
+    CREATE TABLE IF NOT EXISTS moment_comments (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      moment_id  INTEGER NOT NULL REFERENCES moments(id) ON DELETE CASCADE,
+      user_id    INTEGER NOT NULL REFERENCES users(id),
+      content    TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
   `);
 
   const upsert = db.prepare('INSERT OR IGNORE INTO exp_config VALUES (?,?)');

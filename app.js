@@ -23,6 +23,7 @@ app.use('/api/experiences', require('./routes/experiences'));
 app.use('/api/plans',       require('./routes/plans'));
 app.use('/api/gmv',         require('./routes/gmv'));
 app.use('/api/users',       require('./routes/users'));
+app.use('/api/moments',     require('./routes/moments'));
 
 const { router: sseRouter, broadcast } = require('./routes/sse');
 app.use('/api/sse', sseRouter);
