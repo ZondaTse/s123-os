@@ -442,5 +442,23 @@ const Chat = {
       } catch {}
     };
     this.sse.onerror = () => { setTimeout(()=>this.startSSE(), 5000); };
+    // 保底轮询：每3秒检查一次新消息
+    if (this._pollTimer) clearInterval(this._pollTimer);
+    this._pollTimer = setInterval(() => this.pollNewMessages(), 3000);
+  },
+
+  async pollNewMessages() {
+    if (!API.token()) return;
+    try {
+      const data = await API.get('/api/messages?limit=10');
+      const msgs = data.messages || [];
+      for (const msg of msgs) {
+        if (msg.id > this.lastId && !State.messages.find(m => m.id === msg.id)) {
+          this.lastId = msg.id;
+          if (msg.sender_id !== State.user.id) this.appendMsg(msg);
+        }
+      }
+      if (msgs.length) this.lastId = Math.max(this.lastId, ...msgs.map(m => m.id));
+    } catch {}
   },
 };
