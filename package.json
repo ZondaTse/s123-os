@@ -1,0 +1,24 @@
+{
+  "name": "s123-os",
+  "version": "1.0.0",
+  "description": "S123 Operating System - V1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-sqlite app.js",
+    "dev": "node --experimental-sqlite --watch app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "sql.js": "^1.14.1",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+db/s123.db
+db/*.db-shm
+db/*.db-wal
+public/uploads/*
+!public/uploads/.gitkeep
+.env
+*.log

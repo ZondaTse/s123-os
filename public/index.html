@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>S123 OS</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+
+<!-- ══ LOGIN — 微信登录风格 ══ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-top">
+    <div class="login-logo">
+      <svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="20" fill="none" stroke="white" stroke-width="2.5"/><text x="23" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="white">$</text></svg>
+    </div>
+    <div class="login-title">S123 OS</div>
+  </div>
+  <div class="login-body">
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('login')">登录</button>
+      <button class="login-tab" onclick="switchLoginTab('register')">注册</button>
+    </div>
+    <!-- Login fields -->
+    <div id="login-fields">
+      <div class="login-field">
+        <span class="login-field-label">手机号</span>
+        <input id="login-phone" type="tel" placeholder="请输入手机号" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <span class="login-field-label">密码</span>
+        <input id="login-pwd" type="password" placeholder="请输入密码" autocomplete="current-password">
+      </div>
+      <button class="login-btn" onclick="doLogin()">登录</button>
+    </div>
+    <!-- Register fields -->
+    <div id="register-fields" style="display:none">
+      <div class="login-field">
+        <span class="login-field-label">姓名</span>
+        <input id="reg-name" type="text" placeholder="请输入姓名">
+      </div>
+      <div class="login-field">
+        <span class="login-field-label">手机号</span>
+        <input id="reg-phone" type="tel" placeholder="请输入手机号">
+      </div>
+      <div class="login-field">
+        <span class="login-field-label">密码</span>
+        <input id="reg-pwd" type="password" placeholder="设置密码">
+      </div>
+      <div class="login-field">
+        <span class="login-field-label">邀请码</span>
+        <input id="reg-invite" type="text" placeholder="请输入邀请码">
+      </div>
+      <div class="login-invite-hint">邀请码由管理员提供</div>
+      <button class="login-btn" onclick="doRegister()">注册</button>
+    </div>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none">
+
+  <div class="header" id="main-header">
+    <div class="header-left" id="header-left"></div>
+    <div class="header-title" id="header-title">S123旗舰店</div>
+    <div class="header-right" id="header-right"></div>
+  </div>
+
+  <!-- TAB 1: Chat -->
+  <div class="page active" id="page-chat">
+    <div class="chat-wrap">
+      <div class="chat-messages" id="chat-messages">
+        <div class="loading"><div class="spinner"></div>加载消息...</div>
+      </div>
+      <div class="chat-input-bar">
+        <button class="chat-input-btn" id="chat-voice-btn" title="语音" onclick="Chat.toggleVoice()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 0-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <textarea class="chat-input-field" id="chat-input" placeholder="输入消息..." rows="1"></textarea>
+        <button class="chat-input-btn" id="chat-more-btn" title="更多" onclick="document.getElementById('chat-extra').classList.toggle('show')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </button>
+        <button class="chat-send-btn" id="chat-send" onclick="Chat.sendText()">发送</button>
+      </div>
+      <div class="chat-extra-bar" id="chat-extra">
+        <div class="chat-extra-item" onclick="document.getElementById('img-picker').click()">
+          <div class="chat-extra-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+          <div class="chat-extra-label">图片</div>
+          <input id="img-picker" type="file" accept="image/*" style="display:none" onchange="Chat.sendFile(this.files[0],'image');this.value=''">
+        </div>
+      </div>
+    </div>
+    <div class="ctx-overlay" id="ctx-overlay" onclick="this.classList.remove('show');document.getElementById('ctx-menu').classList.remove('show')"></div>
+    <div class="ctx-menu" id="ctx-menu">
+      <div class="ctx-item" id="ctx-to-task">📋 转为任务</div>
+      <div class="ctx-item" id="ctx-to-exp">💡 转为经验</div>
+      <div class="ctx-item" id="ctx-copy">📄 复制</div>
+      <div class="ctx-item danger" id="ctx-del">🗑 删除</div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Execution -->
+  <div class="page" id="page-exec">
+    <div class="segment" id="exec-seg">
+      <button class="seg-btn active" data-tab="tasks">今日任务</button>
+      <button class="seg-btn" data-tab="plans">计划</button>
+      <button class="seg-btn" data-tab="content">素材研究</button>
+    </div>
+    <div class="scroll-list" id="exec-content" style="position:relative">
+      <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+    <button class="fab" id="exec-fab" style="display:none;position:absolute;right:16px;bottom:16px">＋</button>
+  </div>
+
+  <!-- TAB 3: Wealth -->
+  <div class="page" id="page-wealth">
+    <div class="scroll-list" id="wealth-content">
+      <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+  </div>
+
+  <!-- TAB 4: My -->
+  <div class="page" id="page-my">
+    <div class="scroll-list" id="my-content">
+      <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+  </div>
+
+  <!-- Tab Bar — 微信风格SVG图标 -->
+  <div class="tab-bar">
+    <button class="tab-item active" data-tab="chat" onclick="switchTab('chat')">
+      <div class="tab-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      </div>
+      <span>会议</span>
+    </button>
+    <button class="tab-item" data-tab="exec" onclick="switchTab('exec')">
+      <div class="tab-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/><line x1="20" y1="15" x2="20" y2="21"/><line x1="17" y1="18" x2="23" y2="18"/></svg>
+      </div>
+      <span>执行</span>
+    </button>
+    <button class="tab-item" data-tab="wealth" onclick="switchTab('wealth')">
+      <div class="tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v1m0 8v1M9.5 9.5C9.5 8.4 10.6 8 12 8s2.5.4 2.5 1.5S13.4 11 12 11s-2.5.6-2.5 1.5S10.6 16 12 16s2.5-.4 2.5-1.5"/></svg>
+      </div>
+      <span>发财</span>
+    </button>
+    <button class="tab-item" data-tab="my" onclick="switchTab('my')">
+      <div class="tab-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span>我的</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ SHEETS ══ -->
+
+<!-- Task Sheet -->
+<div class="overlay" id="task-overlay" onclick="if(event.target===this)hideSheet('task-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="task-sheet-title">新建任务</div>
+    <div class="sheet-body">
+      <input type="hidden" id="task-id">
+      <div class="form-group">
+        <label class="form-label">任务标题 *</label>
+        <input class="form-input" id="task-title-input" placeholder="例：重新拍K4226显瘦对比图">
+      </div>
+      <div class="form-group">
+        <label class="form-label">指派给</label>
+        <select class="form-input form-select" id="task-assignee"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">关联商品</label>
+        <select class="form-input form-select" id="task-product"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">截止日期</label>
+        <input class="form-input" id="task-due" type="date">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="Exec.saveTask()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('task-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Plan Sheet -->
+<div class="overlay" id="plan-overlay" onclick="if(event.target===this)hideSheet('plan-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">新建计划</div>
+    <div class="sheet-body">
+      <input type="hidden" id="plan-id">
+      <div class="form-group">
+        <label class="form-label">计划类型</label>
+        <select class="form-input form-select" id="plan-type">
+          <option value="shooting">📸 拍摄计划</option>
+          <option value="live">🎬 直播计划</option>
+          <option value="product">🛍 商品计划</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">标题 *</label>
+        <input class="form-input" id="plan-title-input" placeholder="计划标题">
+      </div>
+      <div class="form-group">
+        <label class="form-label">说明</label>
+        <textarea class="form-input form-textarea" id="plan-desc" placeholder="详细说明（可选）"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">关联商品</label>
+        <select class="form-input form-select" id="plan-product"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">计划日期</label>
+        <input class="form-input" id="plan-date" type="date">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="Exec.savePlan()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('plan-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Content Research Sheet -->
+<div class="overlay" id="content-overlay" onclick="if(event.target===this)hideSheet('content-overlay')">
+  <div class="sheet" style="max-height:95vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">素材研究</div>
+    <div class="sheet-body">
+      <input type="hidden" id="content-id">
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="content-title-input" placeholder="例：29.9爆款分析"></div>
+      <div class="form-group"><label class="form-label">抖音链接</label><input class="form-input" id="content-url" type="url" placeholder="https://v.douyin.com/..."></div>
+      <div class="form-group"><label class="form-label">截图</label><input class="form-input" id="content-screenshot" type="file" accept="image/*" style="padding:8px"></div>
+      <div class="form-group"><label class="form-label">爆点分析</label><textarea class="form-input form-textarea" id="content-boom" placeholder="为什么这条内容爆？"></textarea></div>
+      <div class="form-group"><label class="form-label">为什么研究</label><textarea class="form-input form-textarea" id="content-why" placeholder="研究这条内容的原因"></textarea></div>
+      <div class="form-group"><label class="form-label">执行计划</label><textarea class="form-input form-textarea" id="content-plan" placeholder="打算怎么模仿/执行"></textarea></div>
+      <div class="form-group"><label class="form-label">执行结果</label><textarea class="form-input form-textarea" id="content-result" placeholder="实际执行效果如何"></textarea></div>
+      <div class="form-group"><label class="form-label">经验总结</label><textarea class="form-input form-textarea" id="content-summary" placeholder="总结本次经验教训"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">关联商品</label>
+        <div id="content-products" style="max-height:120px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 12px"></div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="Exec.saveContent()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('content-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Experience List -->
+<div class="overlay" id="exp-overlay" onclick="if(event.target===this)hideSheet('exp-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">我的经验</div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+      <button class="btn btn-primary btn-block" onclick="My.showAddExp()">＋ 新增经验</button>
+    </div>
+    <div id="exp-list" style="max-height:65vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- Experience Edit -->
+<div class="overlay" id="exp-edit-overlay" onclick="if(event.target===this)hideSheet('exp-edit-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">经验记录</div>
+    <div class="sheet-body">
+      <input type="hidden" id="exp-edit-id">
+      <div class="form-group"><label class="form-label">标题 *</label><input class="form-input" id="exp-edit-title" placeholder="例：为什么K4226这次卖爆了"></div>
+      <div class="form-group"><label class="form-label">内容</label><textarea class="form-input form-textarea" id="exp-edit-content" placeholder="详细记录..." style="min-height:120px"></textarea></div>
+      <div class="form-group"><label class="form-label">关联商品</label><select class="form-input form-select" id="exp-edit-product"></select></div>
+      <button class="btn btn-primary btn-block" onclick="My.saveExp()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('exp-edit-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- My Tasks -->
+<div class="overlay" id="mytasks-overlay" onclick="if(event.target===this)hideSheet('mytasks-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">我的任务</div>
+    <div id="mytasks-list" style="max-height:75vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- My Products -->
+<div class="overlay" id="myproducts-overlay" onclick="if(event.target===this)hideSheet('myproducts-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">商品管理</div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+      <button class="btn btn-primary btn-block" onclick="My.showAddProduct()">＋ 添加商品</button>
+    </div>
+    <div id="myproducts-list" style="max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- Product Edit -->
+<div class="overlay" id="product-edit-overlay" onclick="if(event.target===this)hideSheet('product-edit-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">编辑商品</div>
+    <div class="sheet-body">
+      <input type="hidden" id="product-edit-id">
+      <div class="form-group"><label class="form-label">款号 *</label><input class="form-input" id="product-edit-sku" placeholder="如 S123-2603K4226"></div>
+      <div class="form-group"><label class="form-label">商品名称 *</label><input class="form-input" id="product-edit-name" placeholder="商品名称"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">库存</label><input class="form-input" id="product-edit-stock" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">售价</label><input class="form-input" id="product-edit-price" type="number" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label class="form-label">成本价</label><input class="form-input" id="product-edit-cost" type="number" placeholder="0"></div>
+      <div class="form-group">
+        <label class="form-label">生命周期</label>
+        <select class="form-input form-select" id="product-edit-status">
+          <option value="new">新品</option><option value="hot">爆款</option>
+          <option value="stable">稳定款</option><option value="sleeping">睡眠款</option>
+          <option value="zombie">僵尸款</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">商品图片</label><input class="form-input" id="product-edit-image" type="file" accept="image/*" style="padding:8px"></div>
+      <button class="btn btn-primary btn-block" onclick="My.saveProduct()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('product-edit-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="overlay" id="settings-overlay" onclick="if(event.target===this)hideSheet('settings-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">设置</div>
+    <div class="menu-section" style="margin-top:0;border-top:none">
+      <div class="menu-item" onclick="toggleTheme()">
+        <div class="menu-icon-wrap" style="background:#e8f4fd">🌙</div>
+        <div class="menu-label">切换日间/夜间</div>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showSheet('pwd-overlay')">
+        <div class="menu-icon-wrap" style="background:#f5f5f5">🔒</div>
+        <div class="menu-label">修改密码</div>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-section" style="margin-top:0">
+      <div class="menu-item" onclick="doLogout()">
+        <div class="menu-icon-wrap" style="background:#fce4ec">🚪</div>
+        <div class="menu-label" style="color:var(--red)">退出登录</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change password -->
+<div class="overlay" id="pwd-overlay" onclick="if(event.target===this)hideSheet('pwd-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">修改密码</div>
+    <div class="sheet-body">
+      <div class="form-group"><input class="form-input" id="new-pwd" type="password" placeholder="新密码"></div>
+      <button class="btn btn-primary btn-block" onclick="changePwd()">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/js/wealth_my_patch.js"></script>
+
+<script src="/js/utils.js"></script>
+<script src="/js/chat.js"></script>
+<script src="/js/exec.js"></script>
+<script src="/js/wealth.js"></script>
+<script>
+initTheme();
+
+let currentTab = 'chat';
+const tabInited = {};
+
+function switchTab(tab) {
+  if (tab === currentTab && tabInited[tab]) return;
+  currentTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tab));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  const titles = { chat: 'S123旗舰店', exec: '执行', wealth: '发财', my: '我的' };
+  document.getElementById('header-title').textContent = titles[tab] || '';
+  if (!tabInited[tab]) {
+    tabInited[tab] = true;
+    if (tab === 'exec') Exec.init();
+    if (tab === 'wealth') Wealth.init();
+    if (tab === 'my') My.init();
+  }
+}
+
+function switchLoginTab(mode) {
+  document.querySelectorAll('.login-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (mode === 'login')));
+  document.getElementById('login-fields').style.display = mode === 'login' ? '' : 'none';
+  document.getElementById('register-fields').style.display = mode === 'register' ? '' : 'none';
+  document.getElementById('login-error').textContent = '';
+}
+
+async function doLogin() {
+  const phone = document.getElementById('login-phone').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!phone || !pwd) { errEl.textContent = '请填写手机号和密码'; return; }
+  try {
+    const d = await API.post('/api/auth/login', { phone, password: pwd });
+    localStorage.setItem('s123_token', d.token);
+    State.user = d.user;
+    bootApp();
+  } catch(e) { errEl.textContent = e.message; }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pwd = document.getElementById('reg-pwd').value;
+  const invite = document.getElementById('reg-invite').value.trim();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!name || !phone || !pwd || !invite) { errEl.textContent = '请填写所有字段'; return; }
+  try {
+    const d = await API.post('/api/auth/register', { name, phone, password: pwd, invite_code: invite });
+    localStorage.setItem('s123_token', d.token);
+    State.user = d.user;
+    bootApp();
+  } catch(e) { errEl.textContent = e.message; }
+}
+
+function doLogout() {
+  if (!confirm('确认退出登录？')) return;
+  localStorage.removeItem('s123_token');
+  location.reload();
+}
+
+async function changePwd() {
+  const pwd = document.getElementById('new-pwd').value;
+  if (!pwd) { toast('请输入新密码'); return; }
+  try {
+    await API.put('/api/users/me', { password: pwd });
+    hideSheet('pwd-overlay');
+    toast('密码已修改');
+  } catch(e) { toast(e.message); }
+}
+
+async function bootApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  API.get('/api/gmv/today').then(d => { State.gmv = d; }).catch(() => {});
+  tabInited.chat = true;
+  await Chat.init();
+}
+
+// Auto-login
+(async function () {
+  const token = API.token();
+  if (!token) return;
+  try {
+    const d = await API.get('/api/auth/me');
+    State.user = d.user;
+    bootApp();
+  } catch { localStorage.removeItem('s123_token'); }
+})();
+
+document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-phone').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pwd').focus(); });
+</script>
+</body>
+</html>
