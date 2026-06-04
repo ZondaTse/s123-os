@@ -130,9 +130,8 @@ function confirm(msg) {
 
 // Theme
 function initTheme() {
-  const saved = localStorage.getItem('s123_theme');
-  const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (preferDark ? 'dark' : 'light');
+  // Default to light mode — user must explicitly switch to dark
+  const theme = localStorage.getItem('s123_theme') || 'light';
   document.documentElement.setAttribute('data-theme', theme);
   return theme;
 }
@@ -156,4 +155,9 @@ function donutSVG(pct, size = 56, stroke = 6, color = '#07c160') {
       stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${circ/4}" stroke-linecap="round"
       transform="rotate(-90 ${size/2} ${size/2})"/>
   </svg>`;
+}
+
+// escHtml - shared utility (also defined in exec.js for safety)
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }

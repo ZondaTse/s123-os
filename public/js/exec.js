@@ -54,16 +54,16 @@ const Exec = {
     const pct = Math.round(gmvActual / gmvTarget * 100);
 
     let html = `
-      <div class="donut-wrap">
-        ${donutSVG(pct, 56, 6)}
-        <div class="donut-info">
-          <div class="donut-pct">${pct}%</div>
-          <div class="donut-label">今日GMV目标完成率</div>
+      <div style="background:var(--bg2);padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px">
+        <div style="flex-shrink:0">${donutSVG(pct, 60, 6)}</div>
+        <div style="flex:1">
+          <div style="font-size:26px;font-weight:700;color:var(--green)">${pct}%</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">今日GMV目标完成率</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:13px;color:var(--text3)">目标</div>
-          <div style="font-size:16px;font-weight:600;color:var(--text)">${fmtMoney(gmvTarget)}</div>
-          <div style="font-size:13px;color:var(--green);font-weight:600">${fmtMoney(gmvActual)}</div>
+          <div style="font-size:11px;color:var(--text3)">目标</div>
+          <div style="font-size:17px;font-weight:600;color:var(--text)">${fmtMoney(gmvTarget)}</div>
+          <div style="font-size:14px;color:var(--green);font-weight:600">${fmtMoney(gmvActual)}</div>
         </div>
       </div>
     `;
