@@ -85,18 +85,17 @@ router.get('/goods', auth, async (req, res) => {
   try {
     let found = null;
     let lastData = null;
-    let permError = false;
 
-    // 先用hmac，再用hmac-sha256，每种都试outerId和goodsNo
+    // 正确接口：erp.item.list.query，参数：sysOuterId（系统商家编码）
     const attempts = [
-      { sign: 'hmac',       params: { outerId: sku } },
-      { sign: 'hmac',       params: { goodsNo: sku } },
-      { sign: 'hmac-sha256', params: { outerId: sku } },
-      { sign: 'hmac-sha256', params: { goodsNo: sku } },
+      { sign: 'hmac', method: 'erp.item.list.query', params: { sysOuterId: sku } },
+      { sign: 'hmac', method: 'erp.item.list.query', params: { outerId: sku } },
+      { sign: 'hmac', method: 'erp.item.list.query', params: { sysOuterId: '%' + sku } },
+      { sign: 'hmac', method: 'erp.item.list.query', params: { outerId: '%' + sku } },
     ];
 
-    for (const { sign, params: extraParams } of attempts) {
-      const data = await kuaimaiRequest('erp.goods.list.query', {
+    for (const { sign, method, params: extraParams } of attempts) {
+      const data = await kuaimaiRequest(method, {
         ...extraParams,
         pageNo: 1,
         pageSize: 10,
@@ -105,42 +104,37 @@ router.get('/goods', auth, async (req, res) => {
 
       if (!data.success) {
         const msg = data.msg || '';
-        // 真正的权限问题才停止
-        if (data.code === '27' || msg.includes('未授权') || msg.includes('没有权限')) {
-          permError = true;
-          break;
+        const code = String(data.code || '');
+        // 27=接口不存在，401=签名/权限，这些不用继续试
+        if (code === '401') {
+          return res.status(401).json({ error: '签名错误或权限不足: ' + msg, raw: data });
         }
-        // 签名错误继续尝试下一种
         continue;
       }
 
-      const list = data.goodsList || data.list || [];
+      const list = data.items || data.goodsList || data.list || [];
       if (list.length) { found = list[0]; break; }
     }
 
-    if (permError) {
-      return res.status(403).json({
-        error: '快麦接口无权限，请检查accessToken是否包含商品查询权限',
-        raw: lastData,
-      });
-    }
-
     if (!found) {
-      return res.json({ found: false, message: '快麦未找到该款号，请检查主商家编码是否正确', raw: lastData });
+      return res.json({ found: false, message: '快麦未找到该款号，请检查系统商家编码是否正确', raw: lastData });
     }
 
     const result = {
       found: true,
-      name: found.goodsName || found.title || found.name || sku,
-      price: parseFloat(found.price || found.salePrice || found.retailPrice || 0),
-      cost: parseFloat(found.costPrice || found.purchasePrice || 0),
-      stock: parseInt(found.stock || found.totalStock || found.remainStock || 0),
+      name: found.name || found.goodsName || found.title || sku,
+      price: parseFloat(found.retailPrice || found.price || found.salePrice || 0),
+      cost: parseFloat(found.purchasePrice || found.costPrice || 0),
+      stock: parseInt(found.totalStock || found.stock || found.remainStock || 0),
       image_url: found.picUrl || found.mainPic || found.imgUrl || null,
+      outer_id: found.outerId || found.sysOuterId || '',
+      sys_item_id: found.sysItemId || found.id || '',
       skus: (found.skuList || found.skus || []).map(s => ({
-        sku_id: s.skuId || s.outerSkuId,
+        sku_id: s.skuId || s.sysSkuId || s.outerSkuId,
         properties: s.properties || s.specName || s.spec || '',
         stock: s.stock || s.remainStock || 0,
-        price: s.price || found.price || 0,
+        price: s.retailPrice || s.price || found.retailPrice || 0,
+        outer_sku_id: s.outerSkuId || s.skuOuterId || '',
       })),
       raw: found,
     };
@@ -207,13 +201,14 @@ router.get('/debug', auth, async (req, res) => {
   const sku = (req.query.sku || '').trim();
   if (!sku) return res.status(400).json({ error: '请提供sku参数' });
   const results = [];
-  for (const sign of ['hmac', 'hmac-sha256']) {
-    for (const [key, val] of [['outerId', sku], ['goodsNo', sku]]) {
+  for (const method of ['erp.item.list.query', 'erp.item.single.get']) {
+    for (const [key, val] of [['sysOuterId', sku], ['outerId', sku]]) {
       try {
-        const data = await kuaimaiRequest('erp.goods.list.query', { [key]: val, pageNo: 1, pageSize: 3 }, sign);
-        results.push({ sign, key, val, success: data.success, code: data.code, msg: data.msg, count: (data.goodsList||data.list||[]).length, sample: (data.goodsList||data.list||[])[0] || null });
+        const data = await kuaimaiRequest(method, { [key]: val, pageNo: 1, pageSize: 3 }, 'hmac');
+        const list = data.items || data.goodsList || data.list || [];
+        results.push({ method, key, val, success: data.success, code: data.code, msg: data.msg, count: list.length, sample: list[0] || null });
       } catch(e) {
-        results.push({ sign, key, val, error: e.message });
+        results.push({ method, key, val, error: e.message });
       }
     }
   }
