@@ -171,7 +171,7 @@ const Chat = {
   // 图片压缩上传
   async sendImageFile(file) {
     try {
-      const compressed = await this.compressImage(file, 1080, 0.82);
+      const compressed = await this.compressImage(file, 720, 0.82);
       const fd = new FormData();
       fd.append('file', compressed, 'image.jpg');
       fd.append('type', 'image');
