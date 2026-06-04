@@ -145,12 +145,6 @@ router.get('/goods', auth, async (req, res) => {
   }
 });
 
-    res.json(result);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // POST /api/kuaima/sync-product
 // 同步快麦商品数据到本地products表
 router.post('/sync-product', auth, async (req, res) => {
@@ -158,11 +152,11 @@ router.post('/sync-product', auth, async (req, res) => {
   if (!product_id || !sku) return res.status(400).json({ error: '缺少参数' });
 
   try {
-    const data = await kuaimaiRequest('erp.goods.list.query', {
-      goodsNo: sku,
+    const data = await kuaimaiRequest('erp.item.list.query', {
+      sysOuterId: sku,
       pageNo: 1,
       pageSize: 10,
-    });
+    }, 'hmac');
 
     if (!data.success) {
       return res.status(400).json({ error: data.msg || '快麦查询失败' });
