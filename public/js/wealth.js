@@ -330,7 +330,12 @@ const Wealth = {
         if (d.image_url) toast('快麦有商品图，保存后自动导入');
       }
     } catch(e) {
-      tip.textContent = '❌ 同步失败：' + e.message;
+      const msg = e.message || '';
+      if (msg.includes('权限')) {
+        tip.innerHTML = '❌ 需在快麦开放平台申请商品接口权限<br><small style="color:var(--text3)">开发者中心 → 您的APP → 申请 erp.goods.list.query</small>';
+      } else {
+        tip.textContent = '❌ 同步失败：' + msg;
+      }
       tip.style.color = 'var(--red)';
     } finally {
       btn.textContent = '从快麦同步'; btn.disabled = false;

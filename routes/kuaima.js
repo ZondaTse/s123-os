@@ -65,55 +65,72 @@ function kuaimaiRequest(method, extraParams) {
 }
 
 // GET /api/kuaima/goods?sku=xxx
-// 根据款号查询快麦商品信息
+// 根据款号查询快麦商品信息，支持模糊匹配（输入K4228可匹配S123-2603SK4228）
 router.get('/goods', auth, async (req, res) => {
   const sku = (req.query.sku || '').trim();
   if (!sku) return res.status(400).json({ error: '请提供款号' });
 
-  try {
-    // 先用主商家编码(outerId)查，找不到再用款号(goodsNo)查
-    let data = await kuaimaiRequest('erp.goods.list.query', {
-      outerId: sku,
-      pageNo: 1,
-      pageSize: 10,
-    });
+  // 尝试多个查询策略
+  const queries = [
+    { outerId: sku },           // 精确主商家编码
+    { goodsNo: sku },           // 精确款号
+    { outerId: '%' + sku },     // 模糊：结尾匹配
+    { goodsNo: '%' + sku },     // 模糊款号结尾
+  ];
 
-    // 如果outerId找不到，尝试goodsNo
-    if (!data.success || !(data.goodsList || data.list || []).length) {
-      data = await kuaimaiRequest('erp.goods.list.query', {
-        goodsNo: sku,
+  try {
+    let found = null;
+    let lastData = null;
+
+    for (const extraParams of queries) {
+      const data = await kuaimaiRequest('erp.goods.list.query', {
+        ...extraParams,
         pageNo: 1,
         pageSize: 10,
       });
+      lastData = data;
+
+      if (!data.success) {
+        // 权限不足时直接返回错误，不继续尝试
+        if (data.code === '27' || (data.msg || '').includes('权限')) {
+          return res.status(403).json({
+            error: '快麦商品接口权限不足，请在快麦开放平台申请 erp.goods.list.query 接口权限',
+            code: data.code,
+            tip: '申请地址：https://open.kuaima.cn → 开发者中心 → 您的APP → 申请接口'
+          });
+        }
+        continue;
+      }
+
+      const list = data.goodsList || data.list || [];
+      if (list.length) { found = list[0]; break; }
     }
 
-    if (!data.success) {
-      // 返回原始数据帮助调试
-      return res.status(400).json({ error: data.msg || '快麦查询失败', code: data.code, raw: data });
+    if (!found) {
+      return res.json({ found: false, message: '快麦未找到该款号，请检查主商家编码是否正确', raw: lastData });
     }
 
-    const list = data.goodsList || data.list || [];
-    if (!list.length) {
-      return res.json({ found: false, message: '未找到该款号的商品', raw: data });
-    }
-
-    // 整理返回数据（字段名容错处理）
-    const goods = list[0];
     const result = {
       found: true,
-      name: goods.goodsName || goods.title || goods.name || sku,
-      price: parseFloat(goods.price || goods.salePrice || goods.retailPrice || 0),
-      cost: parseFloat(goods.costPrice || goods.purchasePrice || 0),
-      stock: parseInt(goods.stock || goods.totalStock || goods.remainStock || 0),
-      image_url: goods.picUrl || goods.mainPic || goods.imgUrl || null,
-      skus: (goods.skuList || goods.skus || []).map(s => ({
+      name: found.goodsName || found.title || found.name || sku,
+      price: parseFloat(found.price || found.salePrice || found.retailPrice || 0),
+      cost: parseFloat(found.costPrice || found.purchasePrice || 0),
+      stock: parseInt(found.stock || found.totalStock || found.remainStock || 0),
+      image_url: found.picUrl || found.mainPic || found.imgUrl || null,
+      skus: (found.skuList || found.skus || []).map(s => ({
         sku_id: s.skuId || s.outerSkuId,
         properties: s.properties || s.specName || s.spec || '',
         stock: s.stock || s.remainStock || 0,
-        price: s.price || goods.price || 0,
+        price: s.price || found.price || 0,
       })),
-      raw: goods, // 保留原始数据方便调试
+      raw: found,
     };
+
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
     res.json(result);
   } catch (e) {
