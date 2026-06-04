@@ -3,11 +3,35 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const crypto = require('crypto');
+const { execSync } = require('child_process');
 
 const { db, init } = require('./db');
 init();
 
 const app = express();
+
+// ── GitHub Webhook — 推送后立即 git pull + pm2 restart ──
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 's123webhook';
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-hub-signature-256'] || '';
+  const expected = 'sha256=' + crypto.createHmac('sha256', WEBHOOK_SECRET).update(req.body).digest('hex');
+  if (sig !== expected) return res.status(403).send('Forbidden');
+
+  res.status(200).send('OK');
+  // 异步执行，不阻塞响应
+  setTimeout(() => {
+    try {
+      console.log('🔄 Webhook received, pulling latest code...');
+      execSync('cd /root/s123 && git pull origin main', { stdio: 'inherit' });
+      console.log('✅ Pull done, restarting...');
+      execSync('pm2 restart s123', { stdio: 'inherit' });
+    } catch (e) {
+      console.error('❌ Webhook deploy failed:', e.message);
+    }
+  }, 100);
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
