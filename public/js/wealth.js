@@ -308,11 +308,47 @@ const Wealth = {
     `;
   },
 
+  async syncFromKuaima() {
+    const sku = document.getElementById('product-edit-sku').value.trim();
+    if (!sku) { toast('请先填写款号'); return; }
+    const btn = event.target;
+    btn.textContent = '同步中...'; btn.disabled = true;
+    const tip = document.getElementById('kuaima-sync-result');
+    try {
+      const d = await API.get('/api/kuaima/goods?sku=' + encodeURIComponent(sku));
+      if (!d.found) {
+        tip.textContent = '⚠️ 快麦未找到该款号，请手动填写';
+        tip.style.color = 'var(--orange)';
+      } else {
+        document.getElementById('product-edit-name').value = d.name || '';
+        document.getElementById('product-edit-price').value = d.price || '';
+        document.getElementById('product-edit-stock').value = d.stock || '';
+        document.getElementById('product-name-group').style.display = '';
+        document.getElementById('product-price-group').style.display = '';
+        tip.textContent = `✅ 同步成功：${d.name}，库存${d.stock}，售价¥${d.price}`;
+        tip.style.color = 'var(--green)';
+        if (d.image_url) toast('快麦有商品图，保存后自动导入');
+      }
+    } catch(e) {
+      tip.textContent = '❌ 同步失败：' + e.message;
+      tip.style.color = 'var(--red)';
+    } finally {
+      btn.textContent = '从快麦同步'; btn.disabled = false;
+    }
+  },
+
   showAddProduct() {
     document.getElementById('product-sheet-title').textContent = '新建商品';
     document.getElementById('product-edit-id').value = '';
     document.getElementById('product-edit-sku').value = '';
     document.getElementById('product-edit-image').value = '';
+    document.getElementById('product-edit-name').value = '';
+    document.getElementById('product-edit-price').value = '';
+    document.getElementById('product-edit-stock').value = '';
+    document.getElementById('product-edit-status').value = 'new';
+    const tip = document.getElementById('kuaima-sync-result');
+    tip.textContent = '输入款号后点「从快麦同步」自动填入名称、价格、库存';
+    tip.style.color = 'var(--text3)';
     showSheet('product-edit-overlay');
   },
 
@@ -321,7 +357,16 @@ const Wealth = {
     document.getElementById('product-sheet-title').textContent = '编辑商品';
     document.getElementById('product-edit-id').value = id;
     document.getElementById('product-edit-sku').value = p.sku;
+    document.getElementById('product-edit-name').value = p.name || '';
+    document.getElementById('product-edit-price').value = p.price || '';
+    document.getElementById('product-edit-stock').value = p.stock || '';
+    document.getElementById('product-edit-status').value = p.lifecycle_status;
     document.getElementById('product-edit-image').value = '';
+    document.getElementById('product-name-group').style.display = '';
+    document.getElementById('product-price-group').style.display = '';
+    const tip = document.getElementById('kuaima-sync-result');
+    tip.textContent = '可点「从快麦同步」更新最新库存和价格';
+    tip.style.color = 'var(--text3)';
     showSheet('product-edit-overlay');
   },
 
@@ -331,8 +376,13 @@ const Wealth = {
     if (!sku) { toast('请填写款号'); return; }
     const fd = new FormData();
     fd.append('sku', sku);
-    fd.append('name', sku); // 先用款号作为名称，后续快麦同步
-    fd.append('lifecycle_status', 'new');
+    const name = document.getElementById('product-edit-name').value.trim();
+    fd.append('name', name || sku);
+    const price = document.getElementById('product-edit-price').value;
+    const stock = document.getElementById('product-edit-stock').value;
+    if (price) fd.append('price', price);
+    if (stock) fd.append('stock', stock);
+    fd.append('lifecycle_status', document.getElementById('product-edit-status').value);
     const img = document.getElementById('product-edit-image').files[0];
     if (img) fd.append('image', img);
     try {
@@ -342,7 +392,11 @@ const Wealth = {
       const pr = await API.get('/api/products');
       this.products = pr.products;
       this.showProductsPage();
-      toast('已保存，其他信息待快麦同步');
+      toast('已保存');
+      // 如果有product_id，尝试后台同步快麦图片等
+      if (id && sku) {
+        API.post('/api/kuaima/sync-product', { product_id: parseInt(id), sku }).catch(()=>{});
+      }
     } catch(e) { toast(e.message); }
   },
 };

@@ -249,10 +249,34 @@
       <input type="hidden" id="product-edit-id">
       <div class="form-group">
         <label class="form-label">款号 *</label>
-        <input class="form-input" id="product-edit-sku" placeholder="例：S123-2603K4226">
-        <div style="font-size:var(--font-xs);color:var(--text3);margin-top:6px">其他信息（名称、价格、库存、尺码）将从快麦自动同步</div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="product-edit-sku" placeholder="例：S123-2603K4226" style="flex:1">
+          <button onclick="Wealth.syncFromKuaima()" style="background:var(--green);color:white;border:none;border-radius:8px;padding:0 14px;font-size:var(--font-sm);font-weight:600;cursor:pointer;flex-shrink:0">从快麦同步</button>
+        </div>
+        <div style="font-size:var(--font-xs);color:var(--text3);margin-top:6px" id="kuaima-sync-result">输入款号后点「从快麦同步」自动填入名称、价格、库存</div>
       </div>
-      <div class="form-group"><label class="form-label">商品图片</label><input type="file" accept="image/*" id="product-edit-image" style="font-size:15px"></div>
+      <div class="form-group" id="product-name-group" style="display:none">
+        <label class="form-label">商品名称</label>
+        <input class="form-input" id="product-edit-name" placeholder="从快麦同步后自动填入">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="product-price-group" style="display:none">
+        <div class="form-group">
+          <label class="form-label">售价</label>
+          <input class="form-input" id="product-edit-price" type="number" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">库存</label>
+          <input class="form-input" id="product-edit-stock" type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">状态</label>
+        <select class="form-input form-select" id="product-edit-status">
+          <option value="new">新品</option><option value="hot">爆款</option>
+          <option value="stable">普通</option><option value="sleeping">待清货</option><option value="zombie">停售</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">商品图片（可选，快麦有图会自动同步）</label><input type="file" accept="image/*" id="product-edit-image" style="font-size:15px"></div>
       <button class="btn btn-primary btn-block" onclick="Wealth.saveProduct()">保存</button>
       <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('product-edit-overlay')">取消</button>
     </div>

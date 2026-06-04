@@ -24,6 +24,7 @@ app.use('/api/plans',       require('./routes/plans'));
 app.use('/api/gmv',         require('./routes/gmv'));
 app.use('/api/users',       require('./routes/users'));
 app.use('/api/moments',     require('./routes/moments'));
+app.use('/api/kuaima',      require('./routes/kuaima'));
 
 const { router: sseRouter, broadcast } = require('./routes/sse');
 app.use('/api/sse', sseRouter);
