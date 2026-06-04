@@ -43,7 +43,7 @@
 <!-- ══ MAIN APP ══ -->
 <div id="app" style="display:none">
   <!-- 状态栏渐变遮罩 -->
-  <div class="status-mask"></div>
+
   <!-- 日夜切换浮动按钮 -->
   <button id="theme-toggle-btn" onclick="toggleTheme();updateThemeIcon()"><svg id="theme-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg><svg id="theme-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 
@@ -408,6 +408,46 @@ function updateThemeIcon() {
   const t=localStorage.getItem('s123_token'); if(!t) return;
   try { const d=await API.get('/api/auth/me'); State.user=d.user; bootApp(); }
   catch { localStorage.removeItem('s123_token'); }
+})();
+
+// PWA 键盘弹起修复：仅在 standalone 模式下生效
+(function(){
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if (!isStandalone || !window.visualViewport) return;
+
+  const vv = window.visualViewport;
+  let lastH = vv.height;
+
+  function onViewportResize() {
+    const h = vv.height;
+    // 设置 CSS 变量供布局使用
+    document.documentElement.style.setProperty('--vvh', h + 'px');
+
+    // 高度差 > 150px 认为键盘弹起
+    const keyboardOpen = (window.screen.height - h) > 150;
+    document.body.classList.toggle('keyboard-open', keyboardOpen);
+
+    // 键盘弹起时：把 #app 顶到 visualViewport 当前偏移位置，确保输入框可见
+    const app = document.getElementById('app');
+    if (app) {
+      if (keyboardOpen) {
+        app.style.position = 'fixed';
+        app.style.top = vv.offsetTop + 'px';
+        app.style.left = '0';
+        app.style.right = '0';
+        app.style.height = h + 'px';
+      } else {
+        app.style.position = '';
+        app.style.top = '';
+        app.style.height = '';
+      }
+    }
+    lastH = h;
+  }
+
+  vv.addEventListener('resize', onViewportResize);
+  vv.addEventListener('scroll', onViewportResize);
 })();
 </script>
 </body>

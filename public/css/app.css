@@ -99,28 +99,7 @@ body {
   display: none; /* 彻底隐藏 */
 }
 
-/* 状态栏渐变遮罩 — 贴在页面最顶部 */
-.status-mask {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: calc(env(safe-area-inset-top, 20px) + 20px);
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.18) 0%,
-    rgba(0,0,0,0.08) 60%,
-    rgba(0,0,0,0) 100%
-  );
-  pointer-events: none;
-  z-index: 200;
-}
-[data-theme="dark"] .status-mask {
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.35) 0%,
-    rgba(0,0,0,0.12) 60%,
-    rgba(0,0,0,0) 100%
-  );
-}
+
 
 .page {
   display: none;
@@ -993,5 +972,21 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .wbc-arrow {
   font-size: var(--font-xs); color: var(--text3);
   margin-top: 14px; text-align: right;
+}
+
+/* ── PWA standalone 键盘弹起修复 ── */
+/* 键盘弹起时，通过 JS 设置 --vvh，tab-bar 和 input-bar 贴键盘上方 */
+@media all and (display-mode: standalone) {
+  body, #app {
+    height: var(--vvh, 100dvh);
+  }
+  /* 键盘弹起时隐藏底部导航，避免中间出现空白 */
+  body.keyboard-open .tab-bar {
+    display: none;
+  }
+  /* 键盘弹起时 input-bar 不加 safe-area padding */
+  body.keyboard-open .chat-input-bar {
+    padding-bottom: 6px;
+  }
 }
 
