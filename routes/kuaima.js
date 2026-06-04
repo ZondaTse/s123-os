@@ -71,37 +71,48 @@ router.get('/goods', auth, async (req, res) => {
   if (!sku) return res.status(400).json({ error: '请提供款号' });
 
   try {
-    const data = await kuaimaiRequest('erp.goods.list.query', {
-      goodsNo: sku,
+    // 先用主商家编码(outerId)查，找不到再用款号(goodsNo)查
+    let data = await kuaimaiRequest('erp.goods.list.query', {
+      outerId: sku,
       pageNo: 1,
       pageSize: 10,
     });
 
+    // 如果outerId找不到，尝试goodsNo
+    if (!data.success || !(data.goodsList || data.list || []).length) {
+      data = await kuaimaiRequest('erp.goods.list.query', {
+        goodsNo: sku,
+        pageNo: 1,
+        pageSize: 10,
+      });
+    }
+
     if (!data.success) {
-      return res.status(400).json({ error: data.msg || '快麦查询失败', code: data.code });
+      // 返回原始数据帮助调试
+      return res.status(400).json({ error: data.msg || '快麦查询失败', code: data.code, raw: data });
     }
 
     const list = data.goodsList || data.list || [];
     if (!list.length) {
-      return res.json({ found: false, message: '未找到该款号的商品' });
+      return res.json({ found: false, message: '未找到该款号的商品', raw: data });
     }
 
-    // 整理返回数据
+    // 整理返回数据（字段名容错处理）
     const goods = list[0];
     const result = {
       found: true,
-      name: goods.goodsName || goods.title || sku,
-      price: goods.price || goods.salePrice || 0,
-      cost: goods.costPrice || goods.purchasePrice || 0,
-      stock: goods.stock || goods.totalStock || 0,
-      image_url: goods.picUrl || goods.mainPic || null,
-      skus: (goods.skuList || []).map(s => ({
+      name: goods.goodsName || goods.title || goods.name || sku,
+      price: parseFloat(goods.price || goods.salePrice || goods.retailPrice || 0),
+      cost: parseFloat(goods.costPrice || goods.purchasePrice || 0),
+      stock: parseInt(goods.stock || goods.totalStock || goods.remainStock || 0),
+      image_url: goods.picUrl || goods.mainPic || goods.imgUrl || null,
+      skus: (goods.skuList || goods.skus || []).map(s => ({
         sku_id: s.skuId || s.outerSkuId,
-        properties: s.properties || s.specName || '',
-        stock: s.stock || 0,
+        properties: s.properties || s.specName || s.spec || '',
+        stock: s.stock || s.remainStock || 0,
         price: s.price || goods.price || 0,
       })),
-      raw: goods,
+      raw: goods, // 保留原始数据方便调试
     };
 
     res.json(result);
