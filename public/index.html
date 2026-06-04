@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>S123 OS</title>
-<link rel="stylesheet" href="/css/app.css?v=4">
+<link rel="stylesheet" href="/css/app.css?v=5">
 </head>
 <body>
 
@@ -24,33 +24,15 @@
       <button class="login-tab" onclick="switchLoginTab('register')">注册</button>
     </div>
     <div id="login-fields">
-      <div class="login-field">
-        <span class="login-field-label">手机号</span>
-        <input id="login-phone" type="tel" placeholder="请输入手机号" autocomplete="username">
-      </div>
-      <div class="login-field">
-        <span class="login-field-label">密码</span>
-        <input id="login-pwd" type="password" placeholder="请输入密码" autocomplete="current-password">
-      </div>
+      <div class="login-field"><span class="login-field-label">手机号</span><input id="login-phone" type="tel" placeholder="请输入手机号"></div>
+      <div class="login-field"><span class="login-field-label">密码</span><input id="login-pwd" type="password" placeholder="请输入密码"></div>
       <button class="login-btn" onclick="doLogin()">登录</button>
     </div>
     <div id="register-fields" style="display:none">
-      <div class="login-field">
-        <span class="login-field-label">姓名</span>
-        <input id="reg-name" type="text" placeholder="请输入姓名">
-      </div>
-      <div class="login-field">
-        <span class="login-field-label">手机号</span>
-        <input id="reg-phone" type="tel" placeholder="请输入手机号">
-      </div>
-      <div class="login-field">
-        <span class="login-field-label">密码</span>
-        <input id="reg-pwd" type="password" placeholder="设置密码">
-      </div>
-      <div class="login-field">
-        <span class="login-field-label">邀请码</span>
-        <input id="reg-invite" type="text" placeholder="请输入邀请码">
-      </div>
+      <div class="login-field"><span class="login-field-label">姓名</span><input id="reg-name" type="text" placeholder="请输入姓名"></div>
+      <div class="login-field"><span class="login-field-label">手机号</span><input id="reg-phone" type="tel" placeholder="请输入手机号"></div>
+      <div class="login-field"><span class="login-field-label">密码</span><input id="reg-pwd" type="password" placeholder="设置密码"></div>
+      <div class="login-field"><span class="login-field-label">邀请码</span><input id="reg-invite" type="text" placeholder="请输入邀请码"></div>
       <div class="login-invite-hint">邀请码由管理员提供</div>
       <button class="login-btn" onclick="doRegister()">注册</button>
     </div>
@@ -62,13 +44,13 @@
 <div id="app" style="display:none">
 
   <div class="header" id="main-header">
-    <div class="header-left" id="header-left"></div>
-    <div class="header-title" id="header-title">S123旗舰店</div>
-    <div class="header-right" id="header-right">
+    <div class="header-left" id="header-left">
       <button class="theme-btn" onclick="toggleTheme()" title="切换模式">
         <span id="theme-icon">☀️</span>
       </button>
     </div>
+    <div class="header-title" id="header-title">S123旗舰店</div>
+    <div class="header-right" id="header-right"></div>
   </div>
 
   <!-- TAB 1: Chat -->
@@ -77,56 +59,69 @@
       <div class="chat-messages" id="chat-messages">
         <div class="loading"><div class="spinner"></div>加载消息...</div>
       </div>
-      <div class="chat-input-bar" id="chat-input-bar">
-        <!-- 微信风格语音按钮 -->
-        <button class="chat-input-btn" id="chat-voice-btn" onclick="Chat.toggleVoice()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="2" width="6" height="12" rx="3"/>
-            <path d="M5 10a7 7 0 0 0 14 0"/>
-            <line x1="12" y1="19" x2="12" y2="22"/>
-            <line x1="8" y1="22" x2="16" y2="22"/>
-          </svg>
-        </button>
-        <div class="voice-record-hint" id="voice-hint">🔴 录音中，再次点击停止</div>
-        <textarea class="chat-input-field" id="chat-input" placeholder="输入消息..." rows="1"></textarea>
-        <button class="chat-input-btn" onclick="document.getElementById('chat-extra').classList.toggle('show')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        </button>
-        <button class="chat-send-btn" onclick="Chat.sendText()">发送</button>
-      </div>
-      <div class="chat-extra-bar" id="chat-extra">
-        <div class="chat-extra-item" onclick="document.getElementById('img-picker').click()">
-          <div class="chat-extra-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          </div>
-          <div class="chat-extra-label">图片</div>
-          <input id="img-picker" type="file" accept="image/*" style="display:none" onchange="Chat.sendFile(this.files[0],'image');this.value=''">
+      <!-- 加号菜单浮层 -->
+      <div class="plus-menu-overlay" id="plus-menu-overlay" onclick="document.getElementById('chat-plus-menu').classList.remove('show');this.classList.remove('show')"></div>
+      <div class="plus-menu" id="chat-plus-menu">
+        <div class="plus-menu-item" onclick="Chat.showWoTask()">
+          <div class="plus-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <span>Wo任务</span>
         </div>
+        <div class="plus-menu-item" onclick="Chat.showTaTask()">
+          <div class="plus-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+          <span>Ta任务</span>
+        </div>
+        <div class="plus-menu-item" onclick="document.getElementById('img-picker').click();document.getElementById('chat-plus-menu').classList.remove('show');document.getElementById('plus-menu-overlay').classList.remove('show')">
+          <div class="plus-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+          <span>照片</span>
+          <input id="img-picker" type="file" accept="image/*" style="display:none" onchange="Chat.sendImageFile(this.files[0]);this.value=''">
+        </div>
+        <div class="plus-menu-item" onclick="Chat.showProductPicker()">
+          <div class="plus-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+          <span>商品</span>
+        </div>
+        <div class="plus-menu-item" onclick="Chat.showBookmarkPicker()">
+          <div class="plus-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <span>收藏</span>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <button class="chat-input-btn" onclick="Chat.togglePlusMenu();document.getElementById('plus-menu-overlay').classList.toggle('show')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </button>
+        <textarea class="chat-input-field" id="chat-input" placeholder="输入消息..." rows="1"></textarea>
+        <button class="chat-send-btn" onclick="Chat.sendText()">发送</button>
       </div>
     </div>
     <div class="ctx-overlay" id="ctx-overlay" onclick="this.classList.remove('show');document.getElementById('ctx-menu').classList.remove('show')"></div>
     <div class="ctx-menu" id="ctx-menu">
-      <div class="ctx-item" id="ctx-to-task">📋 转为任务</div>
-      <div class="ctx-item" id="ctx-to-exp">💡 转为经验</div>
-      <div class="ctx-item" id="ctx-copy">📄 复制</div>
-      <div class="ctx-item danger" id="ctx-del">🗑 删除</div>
+      <div class="ctx-item" id="ctx-to-task">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        转为任务
+      </div>
+      <div class="ctx-item" id="ctx-bookmark">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        收藏
+      </div>
+      <div class="ctx-item" id="ctx-copy">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        复制
+      </div>
+      <div class="ctx-item danger" id="ctx-del">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        删除
+      </div>
     </div>
   </div>
 
-  <!-- TAB 2: Execution — 作战地图 -->
+  <!-- TAB 2: Execution -->
   <div class="page" id="page-exec">
     <div class="battlefield" id="battlefield">
       <div class="loading"><div class="spinner"></div>加载中...</div>
     </div>
   </div>
 
-  <!-- TAB 3: Wealth — 发财圈 -->
+  <!-- TAB 3: Wealth -->
   <div class="page" id="page-wealth">
-    <div class="wealth-subtabs">
-      <button class="wealth-subtab active" data-wtab="moments" onclick="Wealth.switchTab('moments')">发财圈</button>
-      <button class="wealth-subtab" data-wtab="products" onclick="Wealth.switchTab('products')">商品中心</button>
-      <button class="wealth-subtab" data-wtab="gmv" onclick="Wealth.switchTab('gmv')">GMV</button>
-    </div>
     <div class="scroll-list" id="wealth-content">
       <div class="loading"><div class="spinner"></div>加载中...</div>
     </div>
@@ -142,27 +137,19 @@
   <!-- Tab Bar -->
   <div class="tab-bar">
     <button class="tab-item active" data-tab="chat" onclick="switchTab('chat')">
-      <div class="tab-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-      </div>
-      <span>会议</span>
+      <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <span>会话</span>
     </button>
     <button class="tab-item" data-tab="exec" onclick="switchTab('exec')">
-      <div class="tab-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      </div>
+      <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
       <span>执行</span>
     </button>
     <button class="tab-item" data-tab="wealth" onclick="switchTab('wealth')">
-      <div class="tab-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v1m0 8v1M9.5 9.5C9.5 8.4 10.6 8 12 8s2.5.4 2.5 1.5S13.4 11 12 11s-2.5.6-2.5 1.5S10.6 16 12 16s2.5-.4 2.5-1.5"/></svg>
-      </div>
+      <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v1m0 8v1M9.5 9.5C9.5 8.4 10.6 8 12 8s2.5.4 2.5 1.5S13.4 11 12 11s-2.5.6-2.5 1.5S10.6 16 12 16s2.5-.4 2.5-1.5"/></svg></div>
       <span>发财</span>
     </button>
     <button class="tab-item" data-tab="my" onclick="switchTab('my')">
-      <div class="tab-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
+      <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <span>我的</span>
     </button>
   </div>
@@ -170,192 +157,158 @@
 
 <!-- ══ SHEETS ══ -->
 
-<!-- Task Sheet — 极简2字段 -->
-<div class="overlay" id="task-overlay" onclick="if(event.target===this)hideSheet('task-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="task-sheet-title">新建任务</div>
+<!-- Wo任务 -->
+<div class="overlay" id="wo-task-overlay" onclick="if(event.target===this)hideSheet('wo-task-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">Wo任务（给自己）</div>
     <div class="sheet-body">
-      <input type="hidden" id="task-id">
-      <div class="form-group">
-        <label class="form-label">任务标题 *</label>
-        <input class="form-input" id="task-title-input" placeholder="例：重新拍K4226显瘦对比图">
-      </div>
-      <div class="form-group">
-        <label class="form-label">负责人</label>
-        <select class="form-input form-select" id="task-assignee"></select>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="Exec.saveTask()">保存</button>
-      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('task-overlay')">取消</button>
+      <div class="form-group"><label class="form-label">任务标题 *</label><input class="form-input" id="wo-task-title" placeholder="例：整理本周直播数据"></div>
+      <div class="form-group"><label class="form-label">关联商品</label><select class="form-input form-select" id="wo-task-product"></select></div>
+      <button class="btn btn-primary btn-block" onclick="Chat.saveWoTask()">创建任务</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('wo-task-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Plan Sheet — 极简1字段 -->
-<div class="overlay" id="plan-overlay" onclick="if(event.target===this)hideSheet('plan-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">新建计划</div>
+<!-- Ta任务 -->
+<div class="overlay" id="ta-task-overlay" onclick="if(event.target===this)hideSheet('ta-task-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">Ta任务（指派他人）</div>
     <div class="sheet-body">
-      <input type="hidden" id="plan-id">
-      <div class="form-group">
-        <label class="form-label">计划标题 *</label>
-        <input class="form-input" id="plan-title-input" placeholder="例：4226 拍摄方案">
-      </div>
-      <div class="form-group">
-        <label class="form-label">类型</label>
-        <select class="form-input form-select" id="plan-type">
-          <option value="shooting">拍摄</option>
-          <option value="live">直播</option>
-          <option value="product">商品</option>
-        </select>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="Exec.savePlan()">保存</button>
-      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('plan-overlay')">取消</button>
+      <div class="form-group"><label class="form-label">任务标题 *</label><input class="form-input" id="ta-task-title" placeholder="例：重新拍K4226显瘦对比图"></div>
+      <div class="form-group"><label class="form-label">负责人 *</label><select class="form-input form-select" id="ta-task-assignee"></select></div>
+      <div class="form-group"><label class="form-label">关联商品</label><select class="form-input form-select" id="ta-task-product"></select></div>
+      <button class="btn btn-primary btn-block" onclick="Chat.saveTaTask()">指派任务</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('ta-task-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Content Sheet — 极简2字段 -->
+<!-- 商品选择器 -->
+<div class="overlay" id="product-picker-overlay" onclick="if(event.target===this)hideSheet('product-picker-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">选择商品</div>
+    <div class="sheet-body" style="padding:0"><div id="product-picker-list"></div></div>
+  </div>
+</div>
+
+<!-- 收藏选择器（从收藏发到会话） -->
+<div class="overlay" id="bookmark-picker-overlay" onclick="if(event.target===this)hideSheet('bookmark-picker-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">从收藏发送</div>
+    <div class="sheet-body" style="padding:0"><div id="bookmark-picker-list"></div></div>
+  </div>
+</div>
+
+<!-- 参考视频 -->
 <div class="overlay" id="content-overlay" onclick="if(event.target===this)hideSheet('content-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">新建素材研究</div>
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">参考视频</div>
     <div class="sheet-body">
       <input type="hidden" id="content-id">
-      <div class="form-group">
-        <label class="form-label">标题 *</label>
-        <input class="form-input" id="content-title-input" placeholder="例：竞品爆款视频分析">
-      </div>
-      <div class="form-group">
-        <label class="form-label">抖音链接</label>
-        <input class="form-input" id="content-url" placeholder="https://v.douyin.com/...">
-      </div>
-      <!-- 隐藏字段保留兼容性 -->
-      <input type="hidden" id="content-boom">
-      <input type="hidden" id="content-why">
-      <input type="hidden" id="content-plan">
-      <input type="hidden" id="content-result">
-      <input type="hidden" id="content-summary">
-      <input type="hidden" id="content-screenshot">
-      <div id="content-products" style="display:none"></div>
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="content-title-input" placeholder="例：竞品爆款视频分析"></div>
+      <div class="form-group"><label class="form-label">抖音链接</label><input class="form-input" id="content-url" placeholder="https://v.douyin.com/..."></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-input" id="content-note" rows="3" placeholder="为什么参考这个视频？学到了什么？"></textarea></div>
       <button class="btn btn-primary btn-block" onclick="Exec.saveContent()">保存</button>
       <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('content-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Review Sheet — 今日复盘 -->
-<div class="overlay" id="review-overlay" onclick="if(event.target===this)hideSheet('review-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">今日复盘</div>
+<!-- 任务编辑 -->
+<div class="overlay" id="task-edit-overlay" onclick="if(event.target===this)hideSheet('task-edit-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">编辑任务</div>
     <div class="sheet-body">
-      <div class="form-group">
-        <label class="form-label">今天做了什么</label>
-        <textarea class="form-input" id="review-did" rows="3" placeholder="今天的主要工作..."></textarea>
+      <input type="hidden" id="task-edit-id">
+      <div class="form-group"><label class="form-label">任务标题</label><input class="form-input" id="task-edit-title"></div>
+      <div class="form-group"><label class="form-label">负责人</label><select class="form-input form-select" id="task-edit-assignee"></select></div>
+      <div class="form-group"><label class="form-label">状态</label>
+        <select class="form-input form-select" id="task-edit-status">
+          <option value="todo">待做</option>
+          <option value="doing">进行中</option>
+          <option value="done">已完成</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">结果如何</label>
-        <textarea class="form-input" id="review-result" rows="2" placeholder="完成情况..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">下次优化</label>
-        <textarea class="form-input" id="review-next" rows="2" placeholder="改进方向..."></textarea>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="Exec.saveReview()">提交复盘 +30 EXP</button>
-      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('review-overlay')">取消</button>
+      <button class="btn btn-primary btn-block" onclick="Exec.saveTaskEdit()">保存</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('task-edit-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Product Sheet -->
+<!-- 复盘 -->
+<div class="overlay" id="review-overlay" onclick="if(event.target===this)hideSheet('review-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">🎯 任务完成，来复盘一下</div>
+    <div class="sheet-body">
+      <input type="hidden" id="review-task-id">
+      <div class="form-group"><label class="form-label">做了什么 *</label><textarea class="form-input" id="review-did" rows="2" placeholder="一句话就够"></textarea></div>
+      <div class="form-group"><label class="form-label">结果怎么样</label><textarea class="form-input" id="review-result" rows="2" placeholder="结果如何"></textarea></div>
+      <div class="form-group"><label class="form-label">下次怎么做更好</label><textarea class="form-input" id="review-next" rows="2" placeholder="改进方向"></textarea></div>
+      <button class="btn btn-primary btn-block" onclick="Exec.saveReview()">提交复盘 +30 EXP</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('review-overlay')">跳过</button>
+    </div>
+  </div>
+</div>
+
+<!-- 商品编辑 -->
 <div class="overlay" id="product-edit-overlay" onclick="if(event.target===this)hideSheet('product-edit-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
+  <div class="sheet"><div class="sheet-handle"></div>
     <div class="sheet-title" id="product-sheet-title">新建商品</div>
     <div class="sheet-body">
       <input type="hidden" id="product-edit-id">
-      <div class="form-group">
-        <label class="form-label">款号 *</label>
-        <input class="form-input" id="product-edit-sku" placeholder="例：S123-2603">
-      </div>
-      <div class="form-group">
-        <label class="form-label">商品名称 *</label>
-        <input class="form-input" id="product-edit-name" placeholder="例：2603莫代尔短裤">
-      </div>
-      <div class="form-group">
-        <label class="form-label">售价</label>
-        <input class="form-input" id="product-edit-price" type="number" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">成本</label>
-        <input class="form-input" id="product-edit-cost" type="number" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">库存</label>
-        <input class="form-input" id="product-edit-stock" type="number" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">状态</label>
+      <div class="form-group"><label class="form-label">款号 *</label><input class="form-input" id="product-edit-sku" placeholder="例：S123-2603"></div>
+      <div class="form-group"><label class="form-label">商品名称 *</label><input class="form-input" id="product-edit-name" placeholder="例：2603莫代尔短裤"></div>
+      <div class="form-group"><label class="form-label">售价</label><input class="form-input" id="product-edit-price" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">成本</label><input class="form-input" id="product-edit-cost" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">库存</label><input class="form-input" id="product-edit-stock" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">状态</label>
         <select class="form-input form-select" id="product-edit-status">
-          <option value="new">新品</option>
-          <option value="hot">爆款</option>
-          <option value="stable">稳定款</option>
-          <option value="sleeping">睡眠款</option>
-          <option value="zombie">僵尸款</option>
+          <option value="new">新品</option><option value="hot">爆款</option>
+          <option value="stable">普通</option><option value="sleeping">待清货</option><option value="zombie">停售</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">商品图片</label>
-        <input type="file" accept="image/*" id="product-edit-image" style="font-size:15px">
-      </div>
+      <div class="form-group"><label class="form-label">商品图片</label><input type="file" accept="image/*" id="product-edit-image" style="font-size:15px"></div>
       <button class="btn btn-primary btn-block" onclick="Wealth.saveProduct()">保存</button>
       <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('product-edit-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Publish Moment Sheet -->
+<!-- 发财圈发布 -->
 <div class="overlay" id="moment-overlay" onclick="if(event.target===this)hideSheet('moment-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
+  <div class="sheet"><div class="sheet-handle"></div>
     <div class="sheet-title">发布到发财圈</div>
     <div class="sheet-body">
-      <div class="form-group">
-        <textarea class="publish-textarea form-input" id="moment-content" placeholder="分享团队高光时刻...&#10;&#10;🎉 GMV突破里程碑&#10;🎉 爆款视频上线&#10;🎉 商品首日热销"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">关联商品（可选）</label>
-        <select class="form-input form-select" id="moment-product"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">图片（可选）</label>
-        <input type="file" accept="image/*" id="moment-image" style="font-size:15px">
-      </div>
+      <div class="form-group"><textarea class="publish-textarea form-input" id="moment-content" placeholder="分享团队高光时刻..."></textarea></div>
+      <div class="form-group"><label class="form-label">关联商品（可选）</label><select class="form-input form-select" id="moment-product"></select></div>
+      <div class="form-group"><label class="form-label">图片（可选）</label><input type="file" accept="image/*" id="moment-image" style="font-size:15px"></div>
       <button class="btn btn-primary btn-block" onclick="Wealth.publishMoment()">发布</button>
       <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('moment-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Avatar Bottom Sheet -->
+<!-- 评论 -->
+<div class="overlay" id="comment-overlay" onclick="if(event.target===this)hideSheet('comment-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">发表评论</div>
+    <div class="sheet-body">
+      <input type="hidden" id="comment-moment-id">
+      <div class="form-group"><textarea class="form-input" id="comment-content" rows="3" placeholder="写评论..."></textarea></div>
+      <button class="btn btn-primary btn-block" onclick="Wealth.submitComment()">发布</button>
+      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('comment-overlay')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 头像修改 -->
 <div class="overlay" id="avatar-overlay" onclick="if(event.target===this)hideSheet('avatar-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
+  <div class="sheet"><div class="sheet-handle"></div>
     <div class="sheet-body" style="padding-bottom:8px">
-      <div class="menu-row" onclick="My.pickAvatar('camera')">
-        <div class="menu-icon" style="background:#e3f2fd">📷</div>
-        <div class="menu-row-label">拍照</div>
-      </div>
-      <div class="menu-row" onclick="My.pickAvatar('album')">
-        <div class="menu-icon" style="background:#f3e5f5">🖼</div>
-        <div class="menu-row-label">从相册选择</div>
-      </div>
-      <div class="menu-row" onclick="My.deleteAvatar()">
-        <div class="menu-icon" style="background:#fce4ec">🗑</div>
-        <div class="menu-row-label" style="color:var(--red)">删除头像</div>
-      </div>
+      <div class="menu-row" onclick="My.pickAvatar('camera')"><div class="menu-icon" style="background:#e3f2fd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1677ff" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="menu-row-label">拍照</div></div>
+      <div class="menu-row" onclick="My.pickAvatar('album')"><div class="menu-icon" style="background:#f3e5f5"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#a855f7" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div><div class="menu-row-label">从相册选择</div></div>
+      <div class="menu-row" onclick="My.deleteAvatar()"><div class="menu-icon" style="background:#fce4ec"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fa5151" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div><div class="menu-row-label" style="color:var(--red)">删除头像</div></div>
       <div style="height:8px"></div>
       <button class="btn btn-secondary btn-block" onclick="hideSheet('avatar-overlay')">取消</button>
       <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="My.uploadAvatar(this)">
@@ -364,69 +317,40 @@
   </div>
 </div>
 
-<!-- Change Password Sheet -->
+<!-- 修改密码 -->
 <div class="overlay" id="pwd-overlay" onclick="if(event.target===this)hideSheet('pwd-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
+  <div class="sheet"><div class="sheet-handle"></div>
     <div class="sheet-title">修改密码</div>
     <div class="sheet-body">
-      <div class="form-group">
-        <label class="form-label">新密码</label>
-        <input class="form-input" id="new-pwd" type="password" placeholder="请输入新密码">
-      </div>
-      <div class="form-group">
-        <label class="form-label">确认密码</label>
-        <input class="form-input" id="new-pwd2" type="password" placeholder="再次输入新密码">
-      </div>
+      <div class="form-group"><label class="form-label">新密码</label><input class="form-input" id="new-pwd" type="password" placeholder="请输入新密码"></div>
+      <div class="form-group"><label class="form-label">确认密码</label><input class="form-input" id="new-pwd2" type="password" placeholder="再次输入新密码"></div>
       <button class="btn btn-primary btn-block" onclick="My.savePwd()">确认修改</button>
       <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('pwd-overlay')">取消</button>
     </div>
   </div>
 </div>
 
-<!-- Mic Permission Sheet -->
-<div class="overlay" id="mic-overlay" onclick="if(event.target===this)hideSheet('mic-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">需要麦克风权限</div>
-    <div class="sheet-body">
-      <p style="font-size:var(--font-base);color:var(--text2);margin-bottom:16px;line-height:1.6">
-        请开启浏览器麦克风权限后再录音。
-      </p>
-      <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:20px">
-        <div style="font-size:var(--font-sm);font-weight:600;color:var(--text);margin-bottom:8px">📱 iPhone 设置步骤</div>
-        <div style="font-size:var(--font-sm);color:var(--text2);line-height:1.8">
-          设置 → Safari → 麦克风 → 允许
-        </div>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="Chat.retryMic()">重新尝试</button>
-      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('mic-overlay')">取消</button>
-    </div>
+<!-- 收藏列表 -->
+<div class="overlay" id="bookmarks-overlay" onclick="if(event.target===this)hideSheet('bookmarks-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">我的收藏</div>
+    <div class="sheet-body" style="padding:0"><div id="bookmarks-list"></div></div>
   </div>
 </div>
 
-<!-- Comment Sheet -->
-<div class="overlay" id="comment-overlay" onclick="if(event.target===this)hideSheet('comment-overlay')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">评论</div>
-    <div class="sheet-body">
-      <input type="hidden" id="comment-moment-id">
-      <div class="form-group">
-        <textarea class="form-input" id="comment-content" rows="3" placeholder="写评论..."></textarea>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="Wealth.submitComment()">发布评论</button>
-      <button class="btn btn-secondary btn-block mt-8" onclick="hideSheet('comment-overlay')">取消</button>
-    </div>
+<!-- 我的任务列表 -->
+<div class="overlay" id="mytasks-overlay" onclick="if(event.target===this)hideSheet('mytasks-overlay')">
+  <div class="sheet"><div class="sheet-handle"></div>
+    <div class="sheet-title">我的任务</div>
+    <div class="sheet-body" style="padding:0"><div id="mytasks-list"></div></div>
   </div>
 </div>
 
-<script src="/js/utils.js?v=4"></script>
-<script src="/js/chat.js?v=4"></script>
-<script src="/js/exec.js?v=4"></script>
-<script src="/js/wealth.js?v=4"></script>
+<script src="/js/utils.js?v=5"></script>
+<script src="/js/chat.js?v=5"></script>
+<script src="/js/exec.js?v=5"></script>
+<script src="/js/wealth.js?v=5"></script>
 <script>
-// ── App Bootstrap ──
 function switchLoginTab(t) {
   document.getElementById('login-fields').style.display = t==='login'?'':'none';
   document.getElementById('register-fields').style.display = t==='register'?'':'none';
@@ -479,33 +403,17 @@ function switchTab(t) {
   document.getElementById('page-'+t).classList.add('active');
   const titles = { chat:'S123旗舰店', exec:'作战地图', wealth:'发财', my:'我的' };
   document.getElementById('header-title').textContent = titles[t] || 'S123 OS';
-  // header right: 发财圈show publish btn
-  const hr = document.getElementById('header-right');
-  if (t === 'wealth') {
-    hr.innerHTML = `<button class="theme-btn" onclick="toggleTheme()"><span id="theme-icon2">☀️</span></button>
-      <button class="theme-btn" id="publish-btn" onclick="Wealth.showPublish()" style="font-size:22px">📝</button>`;
-    updateThemeIcon();
-  } else {
-    hr.innerHTML = `<button class="theme-btn" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>`;
-    updateThemeIcon();
-  }
 }
 
 function updateThemeIcon() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  ['theme-icon','theme-icon2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = isDark ? '🌙' : '☀️';
-  });
+  const el = document.getElementById('theme-icon');
+  if (el) el.textContent = isDark ? '🌙' : '☀️';
 }
 
 const _toggleTheme = toggleTheme;
-toggleTheme = function() {
-  _toggleTheme();
-  updateThemeIcon();
-};
+toggleTheme = function() { _toggleTheme(); updateThemeIcon(); };
 
-// ── Auto login ──
 (async () => {
   initTheme();
   updateThemeIcon();
