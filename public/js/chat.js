@@ -4,6 +4,7 @@ const Chat = {
   lastId: 0,
   sse: null,
   ctxMsgId: null,
+  plusOpen: false,
 
   async init() {
     this.bindInputBar();
@@ -39,11 +40,10 @@ const Chat = {
   renderMsg(m) {
     const isMe = m.sender_id === State.user.id;
     const name = m.sender_name || '未知';
-    const color = avatarColor(name);
-    const avatarHtml = m.sender_avatar
-      ? `<img src="${m.sender_avatar}" alt="${name}">`
-      : `<span style="color:white">${avatarLetter(name)}</span>`;
+    const senderUser = { name, avatar_url: m.sender_avatar };
+    const avatarHtml = getAvatarHtml(senderUser, 40, '6px');
 
+    // system message
     if (m.type === 'system') {
       try {
         const d = JSON.parse(m.content);
@@ -51,7 +51,7 @@ const Chat = {
           return `<div class="msg-system">
             <div class="msg-system-title">📊 今日数据 · ${d.date}</div>
             <div class="msg-system-row"><span>今日GMV</span><span class="msg-system-val">${fmtMoney(d.gmv)}</span></div>
-            <div class="msg-system-row"><span>订单数</span><span>${d.order_count || 0}</span></div>
+            <div class="msg-system-row"><span>订单数</span><span>${d.order_count||0}</span></div>
             <div class="msg-system-row"><span>转化率</span><span>${((d.conversion_rate||0)*100).toFixed(2)}%</span></div>
           </div>`;
         }
@@ -62,14 +62,15 @@ const Chat = {
     if (m.type === 'task_card') {
       try {
         const d = JSON.parse(m.content);
-        return `<div class="msg-system" style="cursor:pointer" onclick="Chat.openTaskCard(${d.task_id})">
-          <div class="msg-system-title" style="display:flex;align-items:center;gap:6px">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        return `<div class="msg-system" style="cursor:pointer" onclick="switchTab('exec')">
+          <div class="msg-system-title" style="display:flex;align-items:center;gap:6px;color:var(--green)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             新任务
           </div>
-          <div style="font-size:var(--font-base);color:var(--text);margin-top:4px">${escHtml(d.title)}</div>
+          <div style="font-size:var(--font-base);color:var(--text);margin-top:4px;font-weight:500">${escHtml(d.title)}</div>
           ${d.assignee_name ? `<div style="font-size:var(--font-sm);color:var(--text3);margin-top:4px">负责人：${escHtml(d.assignee_name)}</div>` : ''}
-          ${d.product_name ? `<div style="font-size:var(--font-sm);color:var(--text3)">关联商品：${escHtml(d.product_name)}</div>` : ''}
+          ${d.product_name ? `<div style="font-size:var(--font-sm);color:var(--text3)">商品：${escHtml(d.product_name)}</div>` : ''}
+          ${d.due_date ? `<div style="font-size:var(--font-sm);color:var(--orange)">截止：${d.due_date}</div>` : ''}
         </div>`;
       } catch {}
     }
@@ -78,18 +79,13 @@ const Chat = {
     if (m.type === 'image') {
       bubbleContent = `<img src="${m.content}" class="msg-img" onclick="window.open('${m.content}')">`;
     } else if (m.ref_type === 'task' && m.ref_id) {
-      bubbleContent = `<div class="msg-card"><div style="font-size:12px;color:var(--green);margin-bottom:4px;display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/></svg>已转为任务</div><div>${this.esc(m.content.slice(0,60))}</div></div>`;
-    } else if (m.ref_type === 'bookmark') {
-      try {
-        const d = JSON.parse(m.content);
-        bubbleContent = `<div class="msg-card"><div style="font-size:12px;color:var(--green);margin-bottom:4px">⭐ 来自收藏</div><div>${this.esc(d.title||'收藏内容')}</div></div>`;
-      } catch { bubbleContent = `<span>${this.esc(m.content)}</span>`; }
+      bubbleContent = `<div class="msg-card"><div style="font-size:12px;color:var(--green);margin-bottom:4px">✅ 已转为任务</div><div>${this.esc(m.content.slice(0,60))}</div></div>`;
     } else {
       bubbleContent = `<span>${this.esc(m.content)}</span>`;
     }
 
-    return `<div class="msg-row ${isMe ? 'me' : ''}" data-id="${m.id}">
-      <div class="msg-avatar" style="background:${color}">${avatarHtml}</div>
+    return `<div class="msg-row ${isMe?'me':''}" data-id="${m.id}">
+      <div class="msg-avatar-wrap">${avatarHtml}</div>
       <div class="msg-body">
         ${!isMe ? `<div class="msg-name">${this.esc(name)} <span style="font-size:11px;color:var(--text3)">${roleLabel(m.sender_role)}</span></div>` : ''}
         <div class="msg-bubble" oncontextmenu="Chat.showCtx(event,${m.id})" ontouchstart="Chat.touchStart(event,${m.id})" ontouchend="Chat.touchEnd()">${bubbleContent}</div>
@@ -114,18 +110,49 @@ const Chat = {
   },
 
   esc(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   },
 
+  // ── 输入栏绑定 ──
   bindInputBar() {
     const input = document.getElementById('chat-input');
     if (input) {
-      input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendText(); } };
+      input.onkeydown = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); this.sendText(); } };
       input.oninput = () => {
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 100) + 'px';
       };
     }
+    // + 按钮 — 直接绑定，不依赖inline onclick
+    const plusBtn = document.getElementById('chat-plus-btn');
+    if (plusBtn) {
+      plusBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.togglePlusMenu();
+      });
+    }
+    // 点击外部关闭
+    document.addEventListener('click', () => this.closePlusMenu());
+    document.getElementById('img-picker')?.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) this.sendImageFile(file);
+      e.target.value = '';
+    });
+  },
+
+  togglePlusMenu() {
+    const menu = document.getElementById('chat-plus-menu');
+    if (!menu) return;
+    const isOpen = menu.classList.contains('show');
+    if (isOpen) {
+      menu.classList.remove('show');
+    } else {
+      menu.classList.add('show');
+    }
+  },
+
+  closePlusMenu() {
+    document.getElementById('chat-plus-menu')?.classList.remove('show');
   },
 
   async sendText() {
@@ -134,22 +161,22 @@ const Chat = {
     if (!text) return;
     input.value = '';
     input.style.height = 'auto';
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
+    this.closePlusMenu();
     try {
-      const data = await API.post('/api/messages', { type: 'text', content: text });
-      this.appendMsg({ ...data.message, sender_name: State.user.name, sender_role: State.user.role, sender_avatar: State.user.avatar_url });
+      const data = await API.post('/api/messages', { type:'text', content:text });
+      this.appendMsg({ ...data.message, sender_name:State.user.name, sender_role:State.user.role, sender_avatar:State.user.avatar_url });
     } catch { toast('发送失败'); }
   },
 
-  // 图片压缩后上传
+  // 图片压缩上传
   async sendImageFile(file) {
     try {
       const compressed = await this.compressImage(file, 1080, 0.82);
       const fd = new FormData();
-      fd.append('file', compressed, compressed.name || 'image.jpg');
+      fd.append('file', compressed, 'image.jpg');
       fd.append('type', 'image');
       const data = await API.upload('/api/messages/upload', fd);
-      this.appendMsg({ ...data.message, sender_name: State.user.name, sender_role: State.user.role, sender_avatar: State.user.avatar_url });
+      this.appendMsg({ ...data.message, sender_name:State.user.name, sender_role:State.user.role, sender_avatar:State.user.avatar_url });
     } catch { toast('上传失败'); }
   },
 
@@ -169,7 +196,7 @@ const Chat = {
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         canvas.toBlob(blob => {
           if (!blob) return reject(new Error('压缩失败'));
-          resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          resolve(new File([blob], 'image.jpg', { type: 'image/jpeg' }));
         }, 'image/jpeg', quality);
       };
       img.onerror = reject;
@@ -177,53 +204,39 @@ const Chat = {
     });
   },
 
-  // 发送任务卡片到会话
+  // 发任务卡片到会话
   async sendTaskCard(task) {
     try {
       await API.post('/api/messages', {
         type: 'task_card',
-        content: JSON.stringify({
-          task_id: task.id,
-          title: task.title,
-          assignee_name: task.assignee_name,
-          product_name: task.product_name,
-        })
+        content: JSON.stringify({ task_id:task.id, title:task.title, assignee_name:task.assignee_name, product_name:task.product_name, due_date:task.due_date })
       });
     } catch {}
   },
 
-  // 从收藏发到讨论
+  // 从收藏发到会话
   async sendBookmarkToChat(bookmark) {
     try {
-      const data = await API.post('/api/messages', {
-        type: 'text',
-        content: bookmark.title || '收藏内容',
-        ref_type: 'bookmark',
-        ref_id: bookmark.ref_id,
-      });
-      this.appendMsg({ ...data.message, sender_name: State.user.name, sender_role: State.user.role, sender_avatar: State.user.avatar_url });
+      await API.post('/api/messages', { type:'text', content:bookmark.title||'收藏内容' });
       toast('已发送到会话');
-      // 切换到会话Tab
+      hideSheet('bookmark-picker-overlay');
       switchTab('chat');
     } catch { toast('发送失败'); }
   },
 
-  openTaskCard(taskId) {
-    // 跳转到执行页查看任务
-    switchTab('exec');
-    toast('正在查找任务...');
-  },
-
-  // ── 加号菜单 ──
-  togglePlusMenu() {
-    const menu = document.getElementById('chat-plus-menu');
-    menu?.classList.toggle('show');
+  // ── 加号菜单各项 ──
+  openPhoto() {
+    this.closePlusMenu();
+    document.getElementById('img-picker').click();
   },
 
   showWoTask() {
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
-    // Wo任务：创建给自己
+    this.closePlusMenu();
+    // 默认明天
+    const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
+    const tStr = tmr.toISOString().slice(0,10);
     document.getElementById('wo-task-title').value = '';
+    document.getElementById('wo-task-due').value = tStr;
     document.getElementById('wo-task-product').innerHTML = '<option value="">不关联商品</option>';
     API.get('/api/products').then(d => {
       document.getElementById('wo-task-product').innerHTML =
@@ -237,21 +250,31 @@ const Chat = {
     const title = document.getElementById('wo-task-title').value.trim();
     if (!title) { toast('请填写任务标题'); return; }
     const product_id = document.getElementById('wo-task-product').value;
+    const due_date = document.getElementById('wo-task-due').value;
     try {
-      const d = await API.post('/api/tasks', { title, assignee_id: State.user.id, product_id: product_id || undefined });
+      const d = await API.post('/api/tasks', { title, assignee_id:State.user.id, product_id:product_id||undefined, due_date:due_date||undefined });
       hideSheet('wo-task-overlay');
       await this.sendTaskCard(d.task);
+      if (typeof Exec !== 'undefined') { Exec.loadAll().then(()=>Exec.render()); }
       toast('✅ 任务已创建');
     } catch(e) { toast(e.message); }
   },
 
   showTaTask() {
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
+    this.closePlusMenu();
+    const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
     document.getElementById('ta-task-title').value = '';
+    document.getElementById('ta-task-due').value = tmr.toISOString().slice(0,10);
+    document.getElementById('ta-task-product').innerHTML = '<option value="">不关联商品</option>';
+    // 加载成员标签
     Promise.all([API.get('/api/users'), API.get('/api/products')]).then(([ud, pd]) => {
-      document.getElementById('ta-task-assignee').innerHTML =
-        ud.users.filter(u => u.id !== State.user.id)
-               .map(u => `<option value="${u.id}">${u.name} · ${roleLabel(u.role)}</option>`).join('');
+      // 成员标签全选
+      const members = ud.users;
+      const wrap = document.getElementById('ta-task-members');
+      wrap.innerHTML = members.map(u => `
+        <div class="member-tag selected" data-uid="${u.id}" onclick="Chat.toggleMemberTag(this)">
+          ${escHtml(u.name)}
+        </div>`).join('');
       document.getElementById('ta-task-product').innerHTML =
         '<option value="">不关联商品</option>' +
         pd.products.map(p => `<option value="${p.id}">${p.sku} ${p.name}</option>`).join('');
@@ -259,22 +282,38 @@ const Chat = {
     showSheet('ta-task-overlay');
   },
 
+  toggleMemberTag(el) {
+    el.classList.toggle('selected');
+  },
+
   async saveTaTask() {
     const title = document.getElementById('ta-task-title').value.trim();
-    const assignee_id = document.getElementById('ta-task-assignee').value;
     if (!title) { toast('请填写任务标题'); return; }
-    if (!assignee_id) { toast('请选择负责人'); return; }
+    const selected = [...document.querySelectorAll('#ta-task-members .member-tag.selected')];
+    if (!selected.length) { toast('请至少选择一位成员'); return; }
     const product_id = document.getElementById('ta-task-product').value;
+    const due_date = document.getElementById('ta-task-due').value;
     try {
-      const d = await API.post('/api/tasks', { title, assignee_id, product_id: product_id || undefined });
+      // 每人创建一条任务
+      const tasks = [];
+      for (const tag of selected) {
+        const d = await API.post('/api/tasks', { title, assignee_id:tag.dataset.uid, product_id:product_id||undefined, due_date:due_date||undefined });
+        tasks.push(d.task);
+      }
       hideSheet('ta-task-overlay');
-      await this.sendTaskCard(d.task);
-      toast('✅ 已指派任务');
+      // 推送一条合并卡片
+      const names = tasks.map(t=>t.assignee_name).filter(Boolean).join('、');
+      await API.post('/api/messages', {
+        type:'task_card',
+        content: JSON.stringify({ task_id:tasks[0].id, title, assignee_name:names, product_name:tasks[0].product_name, due_date })
+      });
+      if (typeof Exec !== 'undefined') { Exec.loadAll().then(()=>Exec.render()); }
+      toast(`✅ 已指派给 ${names}`);
     } catch(e) { toast(e.message); }
   },
 
   showProductPicker() {
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
+    this.closePlusMenu();
     showSheet('product-picker-overlay');
     const el = document.getElementById('product-picker-list');
     el.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
@@ -286,6 +325,7 @@ const Chat = {
             <div class="list-item-title">${escHtml(p.name)}</div>
             <div class="list-item-sub">${p.sku} · ¥${p.price}</div>
           </div>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </div>`).join('');
     });
   },
@@ -296,26 +336,26 @@ const Chat = {
       const d = await API.get('/api/products');
       const p = d.products.find(p => p.id === productId);
       if (!p) return;
-      await API.post('/api/messages', { type: 'text', content: `商品：${p.name}（${p.sku}）¥${p.price}` });
+      await API.post('/api/messages', { type:'text', content:`📦 商品：${p.name}（${p.sku}）售价 ¥${p.price}` });
       toast('已发送商品');
     } catch {}
   },
 
   showBookmarkPicker() {
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
+    this.closePlusMenu();
     showSheet('bookmark-picker-overlay');
     const el = document.getElementById('bookmark-picker-list');
     el.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
     API.get('/api/users/me/bookmarks').then(d => {
       const bms = d.bookmarks || [];
       if (!bms.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">⭐</div><div class="empty-text">暂无收藏</div></div>'; return; }
-      el.innerHTML = bms.map((b, i) => `
+      el.innerHTML = bms.map(b => `
         <div class="list-item">
-          <div class="list-item-body" onclick="Chat.sendBookmarkToChat(${JSON.stringify(b).replace(/"/g,'&quot;')})">
+          <div class="list-item-body">
             <div class="list-item-title">${escHtml(b.title||'收藏内容')}</div>
-            <div class="list-item-sub">${b.ref_type||''} · ${fmtTime(b.saved_at)}</div>
+            <div class="list-item-sub">${b.ref_type||'消息'} · ${fmtTime(b.saved_at)}</div>
           </div>
-          <button style="background:none;border:none;color:var(--green);font-size:var(--font-sm);padding:4px 8px;cursor:pointer" onclick="Chat.sendBookmarkToChat(${JSON.stringify(b).replace(/"/g,'&quot;')});hideSheet('bookmark-picker-overlay')">发送</button>
+          <button class="btn btn-sm btn-primary" onclick='Chat.sendBookmarkToChat(${JSON.stringify(b).replace(/'/g,"&#39;")})'>发送</button>
         </div>`).join('');
     });
   },
@@ -345,10 +385,15 @@ const Chat = {
     document.getElementById('ctx-del')?.addEventListener('click', () => this.ctxDel());
   },
 
+  closeCtx() {
+    document.getElementById('ctx-menu')?.classList.remove('show');
+    document.getElementById('ctx-overlay')?.classList.remove('show');
+  },
+
   async ctxToTask() {
     this.closeCtx();
     if (!this.ctxMsgId) return;
-    try { await API.post('/api/messages/' + this.ctxMsgId + '/to-task', {}); toast('✅ 已转为任务'); }
+    try { await API.post('/api/messages/'+this.ctxMsgId+'/to-task', {}); toast('✅ 已转为任务'); }
     catch(e) { toast(e.message); }
   },
 
@@ -357,11 +402,7 @@ const Chat = {
     const msg = State.messages.find(m => m.id === this.ctxMsgId);
     if (!msg) return;
     try {
-      await API.post('/api/users/me/bookmarks', {
-        ref_id: msg.id,
-        ref_type: 'message',
-        title: msg.content.slice(0, 50),
-      });
+      await API.post('/api/users/me/bookmarks', { ref_id:msg.id, ref_type:'message', title:msg.content.slice(0,50) });
       toast('⭐ 已收藏');
     } catch(e) { toast(e.message); }
   },
@@ -376,43 +417,30 @@ const Chat = {
     this.closeCtx();
     if (!this.ctxMsgId) return;
     try {
-      await API.del('/api/messages/' + this.ctxMsgId);
+      await API.del('/api/messages/'+this.ctxMsgId);
       State.messages = State.messages.filter(m => m.id !== this.ctxMsgId);
       this.renderAll();
       toast('已删除');
     } catch(e) { toast(e.message); }
   },
 
-  closeCtx() {
-    document.getElementById('ctx-menu')?.classList.remove('show');
-    document.getElementById('ctx-overlay')?.classList.remove('show');
-  },
-
   startSSE() {
     if (this.sse) this.sse.close();
     const token = API.token();
     if (!token) return;
-    this.sse = new EventSource('/api/sse?token=' + encodeURIComponent(token));
+    this.sse = new EventSource('/api/sse?token='+encodeURIComponent(token));
     this.sse.onmessage = e => {
       try {
         const d = JSON.parse(e.data);
-        if (d.type === 'message') {
+        if (d.type==='message') {
           const msg = d.data;
-          if (msg.id > this.lastId && !State.messages.find(m => m.id === msg.id)) {
+          if (msg.id > this.lastId && !State.messages.find(m => m.id===msg.id)) {
             this.lastId = msg.id;
             if (msg.sender_id !== State.user.id) this.appendMsg(msg);
           }
         }
       } catch {}
     };
-    this.sse.onerror = () => { setTimeout(() => this.startSSE(), 5000); };
-  },
-
-  playVoice(url) {
-    new Audio(url).play().catch(() => toast('播放失败'));
+    this.sse.onerror = () => { setTimeout(()=>this.startSSE(), 5000); };
   },
 };
-
-function escHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
