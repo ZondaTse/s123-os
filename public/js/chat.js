@@ -117,11 +117,8 @@ const Chat = {
   bindInputBar() {
     const input = document.getElementById('chat-input');
     if (input) {
-      input.onkeydown = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); this.sendText(); } };
-      input.oninput = () => {
-        input.style.height = 'auto';
-        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
-      };
+      input.onkeydown = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } };
+      input.oninput = () => this.onInputChange(input);
     }
     // + 按钮 — 直接绑定，不依赖inline onclick
     const plusBtn = document.getElementById('chat-plus-btn');
@@ -131,8 +128,19 @@ const Chat = {
         this.togglePlusMenu();
       });
     }
-    // 点击外部关闭
-    document.addEventListener('click', () => this.closePlusMenu());
+    // 点击外部关闭 plus 和 @ 菜单
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#at-menu') && !e.target.closest('#chat-input')) {
+        this.closeAtMenu();
+      }
+      this.closePlusMenu();
+    });
+    // @ 菜单 items
+    document.querySelectorAll('.at-item').forEach(item => {
+      item.addEventListener('click', () => {
+        this.selectAt(item.dataset.type);
+      });
+    });
     document.getElementById('img-picker')?.addEventListener('change', e => {
       const file = e.target.files[0];
       if (file) this.sendImageFile(file);
@@ -461,4 +469,286 @@ const Chat = {
       if (msgs.length) this.lastId = Math.max(this.lastId, ...msgs.map(m => m.id));
     } catch {}
   },
+
+  // @ 模式状态
+  atMode: null, // null | 'wo' | 'ta' | 'product' | 'bookmark'
+
+  // 统一发送入口 — 判断是否 @ 模式
+  async send() {
+    if (this.atMode) {
+      await this.handleAtSend();
+    } else {
+      await this.sendText();
+    }
+  },
+
+  // oninput 钩子 — 检测 @ 触发
+  onInputChange(input) {
+    const val = input.value;
+    // 空输入且有 @ 模式时不做处理
+    if (this.atMode) return;
+    // 用户输入 @ 符号（且是第一个字符或前面有空格）
+    const lastChar = val.slice(-1);
+    if (lastChar === '@' && (val.length === 1 || val.slice(-2, -1) === ' ' || val.slice(-2, -1) === '\n')) {
+      this.showAtMenu();
+    } else {
+      this.closeAtMenu();
+    }
+    // 自动高度
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  },
+
+  showAtMenu() {
+    document.getElementById('at-menu')?.classList.add('show');
+    document.getElementById('at-confirm').style.display = 'none';
+  },
+
+  closeAtMenu() {
+    document.getElementById('at-menu')?.classList.remove('show');
+  },
+
+  selectAt(type) {
+    this.atMode = type;
+    this.closeAtMenu();
+    // 清除 @ 符号
+    const input = document.getElementById('chat-input');
+    if (input) {
+      input.value = input.value.replace(/@$/, '');
+      input.focus();
+    }
+    // 显示确认条
+    const labels = { wo:'📌 Wo任务 — 描述你要做的事', ta:'📋 Ta任务 — 说明谁做什么', product:'📦 @商品 — 输入商品名或款号', bookmark:'⭐ @收藏 — 选择收藏发送到会话' };
+    const hints = { wo:'例：下午去基地拍4228，晚上直播前剪完', ta:'例：小伍今天把K4226显瘦视频重拍，8点前', product:'例：4228 或 Polo衫', bookmark:'' };
+    document.getElementById('at-confirm-type-label').textContent = labels[type] || '';
+    document.getElementById('at-confirm-hint').textContent = hints[type] || '';
+    document.getElementById('at-confirm').style.display = 'block';
+    const placeholder = { wo:'描述任务，直接发送即可创建…', ta:'说明谁负责做什么…', product:'输入商品名或款号…', bookmark:'' };
+    if (input) input.placeholder = placeholder[type] || '输入…';
+    // bookmark 直接打开选择器
+    if (type === 'bookmark') {
+      this.cancelAt();
+      this.showBookmarkPicker();
+    }
+  },
+
+  cancelAt() {
+    this.atMode = null;
+    document.getElementById('at-confirm').style.display = 'none';
+    const input = document.getElementById('chat-input');
+    if (input) { input.placeholder = '输入消息...'; input.focus(); }
+  },
+
+  async handleAtSend() {
+    const input = document.getElementById('chat-input');
+    const text = input?.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = 'auto';
+    const mode = this.atMode;
+    this.cancelAt();
+
+    if (mode === 'product') {
+      await this.handleAtProduct(text);
+      return;
+    }
+    if (mode === 'wo' || mode === 'ta') {
+      await this.handleAtTask(mode, text);
+      return;
+    }
+  },
+
+  // ── 商品搜索 ──
+  async handleAtProduct(keyword) {
+    try {
+      const d = await API.get('/api/products');
+      const kw = keyword.toLowerCase();
+      const match = d.products.filter(p =>
+        (p.name||'').toLowerCase().includes(kw) ||
+        (p.sku||'').toLowerCase().includes(kw)
+      );
+      if (match.length === 0) {
+        // 没有 → 提示新建
+        await API.post('/api/messages', {
+          type: 'text',
+          content: `🔍 未找到"${keyword}"相关商品，需要新建吗？`
+        });
+        toast('未找到商品，可去执行页新建');
+      } else if (match.length === 1) {
+        const p = match[0];
+        await API.post('/api/messages', {
+          type: 'text',
+          content: `📦 ${p.name}（${p.sku}）\n售价 ¥${p.price||'–'} · 库存 ${p.stock||'–'}`
+        });
+        toast('已发送商品卡片');
+      } else {
+        // 多个结果，发一条汇总
+        const list = match.slice(0,5).map(p=>`• ${p.name}（${p.sku}）`).join('\n');
+        await API.post('/api/messages', { type:'text', content:`📦 找到 ${match.length} 个商品：\n${list}` });
+        toast(`找到 ${match.length} 个商品`);
+      }
+    } catch { toast('搜索失败'); }
+  },
+
+  // ── AI 解析任务 ──
+  async handleAtTask(mode, text) {
+    // 先发一条 "解析中" 的本地提示
+    toast('⚡ 正在解析...');
+
+    // 用 Claude API 解析自然语言
+    const parsed = await this.parseTaskWithAI(mode, text);
+
+    if (mode === 'wo') {
+      await this.createWoTaskFromParsed(parsed, text);
+    } else {
+      await this.createTaTaskFromParsed(parsed, text);
+    }
+  },
+
+  async parseTaskWithAI(mode, text) {
+    const today = new Date().toISOString().slice(0,10);
+    const isWo = mode === 'wo';
+    const assigneeLine = isWo ? '' : '\n- assignee_name: 负责人姓名（只提取人名，多人用逗号分隔，不确定则 null）';
+    const exampleWo = '{"title":"拍4228 Polo衫","due_date":"'+today+'","product_sku":"4228"}';
+    const exampleTa = '{"title":"重拍K4226显瘦视频","due_date":"'+today+'","product_sku":"K4226","assignee_name":"小伍"}';
+    const prompt = '你是一个任务解析助手。从下面这句话里提取任务信息，返回 JSON。\n'
+      + '今天日期：' + today + '\n\n'
+      + '输入：' + text + '\n\n'
+      + '要提取的字段（全部可为 null）：\n'
+      + '- title: 任务标题（核心动作，简短，不超过20字）\n'
+      + '- due_date: 截止日期（格式 YYYY-MM-DD，今晚明天等要换算，不确定则 null）\n'
+      + '- product_sku: 商品款号或关键词（只要纯数字+字母，如 4228、K4226，没有则 null）'
+      + assigneeLine + '\n\n'
+      + '只返回 JSON，不要其他内容。示例：\n'
+      + (isWo ? exampleWo : exampleTa);
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 200,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const raw = (data.content||[]).map(c=>c.text||'').join('').trim();
+      const clean = raw.replace(/```json|```/g,'').trim();
+      return JSON.parse(clean);
+    } catch {
+      // 解析失败 → 用原文作标题
+      return { title: text.slice(0,40), due_date: null, product_sku: null, assignee_name: null };
+    }
+  },
+
+  async createWoTaskFromParsed(parsed, rawText) {
+    const title = parsed.title || rawText.slice(0,40);
+    let product_id = null;
+    let product_name = null;
+    if (parsed.product_sku) {
+      try {
+        const d = await API.get('/api/products');
+        const kw = parsed.product_sku.toLowerCase();
+        const p = d.products.find(p => (p.sku||'').toLowerCase().includes(kw) || (p.name||'').toLowerCase().includes(kw));
+        if (p) { product_id = p.id; product_name = p.name; }
+      } catch {}
+    }
+    try {
+      const d = await API.post('/api/tasks', {
+        title, assignee_id: State.user.id,
+        product_id: product_id||undefined,
+        due_date: parsed.due_date||undefined
+      });
+      const task = { ...d.task, product_name };
+      // 发任务卡片到会话
+      await API.post('/api/messages', {
+        type: 'task_card',
+        content: JSON.stringify({
+          task_id: task.id, title,
+          assignee_name: State.user.name,
+          product_name, due_date: parsed.due_date
+        })
+      });
+      if (typeof Exec !== 'undefined') Exec.loadAll().then(()=>Exec.render());
+      toast('✅ Wo任务已创建');
+    } catch(e) { toast('创建失败：'+e.message); }
+  },
+
+  async createTaTaskFromParsed(parsed, rawText) {
+    const title = parsed.title || rawText.slice(0,40);
+    let product_id = null;
+    let product_name = null;
+    if (parsed.product_sku) {
+      try {
+        const d = await API.get('/api/products');
+        const kw = parsed.product_sku.toLowerCase();
+        const p = d.products.find(p => (p.sku||'').toLowerCase().includes(kw) || (p.name||'').toLowerCase().includes(kw));
+        if (p) { product_id = p.id; product_name = p.name; }
+      } catch {}
+    }
+
+    // 尝试匹配团队成员
+    let assignees = [];
+    try {
+      const ud = await API.get('/api/users');
+      const members = ud.users;
+      if (parsed.assignee_name) {
+        const names = parsed.assignee_name.split(/[,，、]/);
+        for (const n of names) {
+          const m = members.find(u => u.name.includes(n.trim()) || n.trim().includes(u.name));
+          if (m && !assignees.find(a=>a.id===m.id)) assignees.push(m);
+        }
+      }
+      // 没匹配到 → 显示成员选择器
+      if (!assignees.length) {
+        assignees = members;
+        this.showTaConfirmSheet(title, assignees, product_id, product_name, parsed.due_date);
+        return;
+      }
+    } catch {}
+
+    // 有匹配的人 → 直接创建
+    await this.createTaTasks(title, assignees, product_id, product_name, parsed.due_date);
+  },
+
+  // 成员选择确认（当 AI 没识别出人时）
+  showTaConfirmSheet(title, members, product_id, product_name, due_date) {
+    document.getElementById('ta-task-title').value = title;
+    document.getElementById('ta-task-due').value = due_date||'';
+    // 加载成员标签
+    const wrap = document.getElementById('ta-task-members');
+    wrap.innerHTML = members.map(u =>
+      `<div class="member-tag selected" data-uid="${u.id}" onclick="Chat.toggleMemberTag(this)">${escHtml(u.name)}</div>`
+    ).join('');
+    // 商品选择
+    API.get('/api/products').then(d => {
+      const opts = '<option value="">不关联商品</option>' +
+        d.products.map(p=>`<option value="${p.id}" ${p.id===product_id?'selected':''}>${p.sku} ${p.name}</option>`).join('');
+      document.getElementById('ta-task-product').innerHTML = opts;
+    });
+    showSheet('ta-task-overlay');
+  },
+
+  async createTaTasks(title, assignees, product_id, product_name, due_date) {
+    try {
+      const tasks = [];
+      for (const u of assignees) {
+        const d = await API.post('/api/tasks', {
+          title, assignee_id: u.id,
+          product_id: product_id||undefined,
+          due_date: due_date||undefined
+        });
+        tasks.push({ ...d.task, product_name });
+      }
+      const names = assignees.map(u=>u.name).join('、');
+      await API.post('/api/messages', {
+        type: 'task_card',
+        content: JSON.stringify({ task_id:tasks[0].id, title, assignee_name:names, product_name, due_date })
+      });
+      if (typeof Exec !== 'undefined') Exec.loadAll().then(()=>Exec.render());
+      toast(`✅ 已指派给 ${names}`);
+    } catch(e) { toast('创建失败：'+e.message); }
+  },
+
 };

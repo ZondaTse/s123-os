@@ -80,8 +80,50 @@
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </button>
         <input id="img-picker" type="file" accept="image/*" style="display:none">
+        <!-- @ 快捷菜单 -->
+        <div class="at-menu" id="at-menu">
+          <div class="at-menu-title">快捷创建</div>
+          <div class="at-item" data-type="wo">
+            <div class="at-item-icon">📌</div>
+            <div class="at-item-body">
+              <div class="at-item-name">@Wo任务</div>
+              <div class="at-item-hint">创建给自己的任务</div>
+            </div>
+          </div>
+          <div class="at-item" data-type="ta">
+            <div class="at-item-icon">📋</div>
+            <div class="at-item-body">
+              <div class="at-item-name">@Ta任务</div>
+              <div class="at-item-hint">指派给团队成员</div>
+            </div>
+          </div>
+          <div class="at-item" data-type="product">
+            <div class="at-item-icon">📦</div>
+            <div class="at-item-body">
+              <div class="at-item-name">@商品</div>
+              <div class="at-item-hint">搜索或发送商品卡片</div>
+            </div>
+          </div>
+          <div class="at-item" data-type="bookmark">
+            <div class="at-item-icon">⭐</div>
+            <div class="at-item-body">
+              <div class="at-item-name">@收藏</div>
+              <div class="at-item-hint">发送收藏内容到会话</div>
+            </div>
+          </div>
+        </div>
+        <!-- @ 任务确认卡片 -->
+        <div class="at-confirm" id="at-confirm" style="display:none">
+          <div class="at-confirm-header">
+            <span id="at-confirm-type-label">📌 Wo任务</span>
+            <button class="at-confirm-cancel" onclick="Chat.cancelAt()">✕</button>
+          </div>
+          <div class="at-confirm-hint" id="at-confirm-hint">描述任务内容，系统自动解析</div>
+        </div>
         <textarea class="chat-input-field" id="chat-input" placeholder="输入消息..." rows="1"></textarea>
-        <button class="chat-send-btn" onclick="Chat.sendText()">发送</button>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="Chat.send()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 5 12 19 12"/></svg>
+  </button>
       </div>
     </div>
     <div class="ctx-overlay" id="ctx-overlay" onclick="this.classList.remove('show');document.getElementById('ctx-menu').classList.remove('show')"></div>
