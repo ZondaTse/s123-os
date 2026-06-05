@@ -282,16 +282,18 @@ const Wealth = {
     const el = document.getElementById('wealth-content');
     
     const statusLabel = { new:'新品', hot:'爆款', stable:'普通', sleeping:'待清货', zombie:'停售' };
-    const statusColor = { new:'#1677ff', hot:'#ff8f1f', stable:'#07c160', sleeping:'#999', zombie:'#fa5151' };
+    const statusColor = { new:'#007AFF', hot:'#FF9500', stable:'#34C759', sleeping:'#8E8E93', zombie:'#FF3B30' };
     el.innerHTML = `
-      ${this.backBtn('商品中心')}
+      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between">
+        <button onclick="Wealth.render()" style="background:none;border:none;color:var(--blue);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 0;font-size:var(--font-base);font-weight:400;-webkit-tap-highlight-color:transparent">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          返回
+        </button>
+        <span style="font-size:var(--font-base);font-weight:600;color:var(--text)">商品中心</span>
+        <button onclick="Wealth.showAddProduct()" style="background:none;border:none;color:var(--blue);cursor:pointer;display:flex;align-items:center;padding:6px 0;font-size:22px;font-weight:300;line-height:1;-webkit-tap-highlight-color:transparent">+</button>
+      </div>
       <div class="product-grid">
-        <div class="product-card-apple" onclick="Wealth.showAddProduct()" style="display:flex;align-items:center;justify-content:center;min-height:190px;border:2px dashed var(--border)">
-          <div style="text-align:center;color:var(--text3)">
-            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            <div style="font-size:var(--font-sm);margin-top:6px">新建商品</div>
-          </div>
-        </div>
+        ${this.products.length === 0 ? `<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--text3);font-size:var(--font-sm)">还没有商品，点右上角 + 新建</div>` : ''}
         ${this.products.map(p => `
           <div class="product-card-apple" onclick="Wealth.openProduct(${p.id})">
             <div class="product-card-img">

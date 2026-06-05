@@ -45,7 +45,6 @@
   <!-- 状态栏渐变遮罩 -->
 
   <!-- 日夜切换浮动按钮 -->
-  <button id="theme-toggle-btn" onclick="toggleTheme();updateThemeIcon()"><svg id="theme-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg><svg id="theme-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 
   <!-- TAB 1: Chat -->
   <div class="page active" id="page-chat">
@@ -110,6 +109,7 @@
 
   <!-- TAB 4: My -->
   <div class="page" id="page-my">
+    <button id="theme-toggle-btn" onclick="toggleTheme();updateThemeIcon()">☀️</button>
     <div class="scroll-list" id="my-content">
       <div class="loading"><div class="spinner"></div>加载中...</div>
     </div>
@@ -127,7 +127,7 @@
     </button>
     <button class="tab-item" data-tab="wealth" onclick="switchTab('wealth')">
       <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v1m0 8v1M9.5 9.5C9.5 8.4 10.6 8 12 8s2.5.4 2.5 1.5S13.4 11 12 11s-2.5.6-2.5 1.5S10.6 16 12 16s2.5-.4 2.5-1.5"/></svg></div>
-      <span>发财</span>
+      <span>发财圈</span>
     </button>
     <button class="tab-item" data-tab="my" onclick="switchTab('my')">
       <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
@@ -394,14 +394,20 @@ function switchTab(t) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
   document.getElementById('page-'+t).classList.add('active');
-  const titles={chat:'S123旗舰店',exec:'执行',wealth:'发财',my:'我的'};
+  const titles={chat:'S123旗舰店',exec:'执行',wealth:'发财圈',my:'我的'};
   
   if(t==='wealth') Wealth.render();
+  // 只在「我的」页显示日夜切换按钮
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  if (themeBtn) {
+    if (t === 'my') themeBtn.classList.add('visible');
+    else themeBtn.classList.remove('visible');
+  }
 }
 function updateThemeIcon() {
-  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
-  document.getElementById('theme-sun').style.display = isDark?'none':'block';
-  document.getElementById('theme-moon').style.display = isDark?'block':'none';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = isDark ? '🌙' : '☀️';
 }
 (async()=>{
   initTheme(); updateThemeIcon();

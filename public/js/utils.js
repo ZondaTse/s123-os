@@ -85,7 +85,7 @@ function avatarLetter(name) {
 }
 
 function avatarColor(name) {
-  const colors = ['#07c160','#1a7be0','#fa5151','#ff8f1f','#a855f7','#14b8a6','#f43f5e'];
+  const colors = ['#007AFF','#34C759','#5AC8FA','#FF9500','#AF52DE','#32ADE6','#FF6B35'];
   let h = 0;
   for (let i = 0; i < (name||'').length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
   return colors[h % colors.length];
@@ -195,5 +195,5 @@ function getAvatarHtml(user, size = 42, radius = '6px') {
   }
   // 文字头像
   const color = avatarColor(user.name || '');
-  return `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:${color};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.4)}px;font-weight:700;color:white">${avatarLetter(user.name||'?')}</div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:linear-gradient(135deg,${color}dd,${color}99);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.4)}px;font-weight:700;color:white;letter-spacing:0">${avatarLetter(user.name||'?')}</div>`;
 }
