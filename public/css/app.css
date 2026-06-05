@@ -35,7 +35,7 @@
   --placeholder: #C7C7CC;
 
   /* iMessage 气泡 */
-  --bubble-me: #007AFF;
+  --bubble-me: #95EC69;
   --bubble-other: #E9E9EB;
   --bubble-me-text: #FFFFFF;
   --bubble-other-text: #000000;
@@ -82,9 +82,9 @@
   --input-bg: #2C2C2E;
   --input-border: rgba(255,255,255,0.12);
   --placeholder: #636366;
-  --bubble-me: #0A84FF;
+  --bubble-me: #3EB575;
   --bubble-other: #2C2C2E;
-  --bubble-me-text: #FFFFFF;
+  --bubble-me-text: #000000;
   --bubble-other-text: #FFFFFF;
 }
 
