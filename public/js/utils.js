@@ -107,12 +107,27 @@ function levelName(level) {
 }
 
 function showSheet(id) {
-  document.getElementById(id).classList.add('show');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 function hideSheet(id) {
-  document.getElementById(id).classList.remove('show');
-  document.body.style.overflow = '';
+  const overlay = document.getElementById(id);
+  if (!overlay) return;
+  // 给内部 sheet 加收起动画
+  const sheet = overlay.querySelector('.sheet, .ios-sheet');
+  if (sheet) {
+    sheet.style.animation = 'iosSlideDown 0.18s cubic-bezier(.4,0,1,1) both';
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      sheet.style.animation = '';
+      document.body.style.overflow = '';
+    }, 170);
+  } else {
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
 }
 
 function initTheme() {

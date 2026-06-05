@@ -151,16 +151,21 @@ const Chat = {
   togglePlusMenu() {
     const menu = document.getElementById('chat-plus-menu');
     if (!menu) return;
-    const isOpen = menu.classList.contains('show');
-    if (isOpen) {
-      menu.classList.remove('show');
+    if (menu.classList.contains('show')) {
+      this.closePlusMenu();
     } else {
       menu.classList.add('show');
     }
   },
 
   closePlusMenu() {
-    document.getElementById('chat-plus-menu')?.classList.remove('show');
+    const menu = document.getElementById('chat-plus-menu');
+    if (!menu || !menu.classList.contains('show')) return;
+    menu.style.animation = 'iosSlideDown 0.16s cubic-bezier(.4,0,1,1) both';
+    setTimeout(() => {
+      menu.classList.remove('show');
+      menu.style.animation = '';
+    }, 150);
   },
 
   async sendText() {
@@ -500,12 +505,22 @@ const Chat = {
   },
 
   showAtMenu() {
-    document.getElementById('at-menu')?.classList.add('show');
+    const menu = document.getElementById('at-menu');
+    if (menu) {
+      menu.style.animation = '';
+      menu.classList.add('show');
+    }
     document.getElementById('at-confirm').style.display = 'none';
   },
 
   closeAtMenu() {
-    document.getElementById('at-menu')?.classList.remove('show');
+    const menu = document.getElementById('at-menu');
+    if (!menu || !menu.classList.contains('show')) return;
+    menu.style.animation = 'iosSlideDown 0.16s cubic-bezier(.4,0,1,1) both';
+    setTimeout(() => {
+      menu.classList.remove('show');
+      menu.style.animation = '';
+    }, 150);
   },
 
   selectAt(type) {
@@ -522,7 +537,12 @@ const Chat = {
     const hints = { wo:'例：下午去基地拍4228，晚上直播前剪完', ta:'例：小伍今天把K4226显瘦视频重拍，8点前', product:'例：4228 或 Polo衫', bookmark:'' };
     document.getElementById('at-confirm-type-label').textContent = labels[type] || '';
     document.getElementById('at-confirm-hint').textContent = hints[type] || '';
-    document.getElementById('at-confirm').style.display = 'block';
+    const confirmEl = document.getElementById('at-confirm');
+    confirmEl.style.animation = '';
+    confirmEl.style.display = 'block';
+    // 触发 reflow 再加动画
+    void confirmEl.offsetWidth;
+    confirmEl.style.animation = 'iosSlideUp 0.22s cubic-bezier(.2,.8,.2,1) both';
     const placeholder = { wo:'描述任务，直接发送即可创建…', ta:'说明谁负责做什么…', product:'输入商品名或款号…', bookmark:'' };
     if (input) input.placeholder = placeholder[type] || '输入…';
     // bookmark 直接打开选择器
@@ -534,7 +554,11 @@ const Chat = {
 
   cancelAt() {
     this.atMode = null;
-    document.getElementById('at-confirm').style.display = 'none';
+    const confirmEl = document.getElementById('at-confirm');
+    if (confirmEl && confirmEl.style.display !== 'none') {
+      confirmEl.style.animation = 'iosSlideDown 0.15s cubic-bezier(.4,0,1,1) both';
+      setTimeout(() => { confirmEl.style.display = 'none'; confirmEl.style.animation = ''; }, 140);
+    }
     const input = document.getElementById('chat-input');
     if (input) { input.placeholder = '输入消息...'; input.focus(); }
   },
