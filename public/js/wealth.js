@@ -521,6 +521,16 @@ const My = {
           <div class="menu-row-label" style="color:var(--red)">退出登录</div>
         </div>
       </div>
+
+      ${u.role === 'admin' ? `
+      <div style="height:8px"></div>
+      <div class="menu-group">
+        <div class="menu-row" onclick="My.syncKmIndex()">
+          <div class="menu-icon" style="background:#e3f2fd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1976d2" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></div>
+          <div class="menu-row-label">同步快麦商品索引</div>
+          <span class="menu-arrow" id="km-sync-status">›</span>
+        </div>
+      </div>` : ''}
       <div style="height:40px"></div>
     `;
   },
@@ -624,6 +634,21 @@ const My = {
         <span class="status-badge status-${t.status==='todo'?'todo':t.status==='doing'?'doing':'done'}">${t.status==='todo'?'待做':t.status==='doing'?'进行中':'完成'}</span>
       </div>`).join('');
     } catch { el.innerHTML = '<div class="empty"><div class="empty-text">加载失败</div></div>'; }
+  },
+
+  async syncKmIndex() {
+    const status = document.getElementById('km-sync-status');
+    if (status) status.textContent = '同步中…';
+    try {
+      const r = await API.post('/api/kuaima/sync-index', {});
+      // 查一下当前索引数量
+      const s = await API.get('/api/kuaima/index-status');
+      toast(`已触发同步，当前索引 ${s.count} 条`);
+      if (status) status.textContent = s.count + '条';
+    } catch(e) {
+      toast('同步失败：' + e.message);
+      if (status) status.textContent = '›';
+    }
   },
 
   logout() {
