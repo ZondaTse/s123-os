@@ -47,6 +47,7 @@ function init() {
       price            REAL NOT NULL DEFAULT 0,
       lifecycle_status TEXT NOT NULL DEFAULT 'new',
       kuaima_id        INTEGER,
+      skus_json        TEXT,
       updated_at       TEXT NOT NULL DEFAULT (datetime('now','localtime'))
     );
 

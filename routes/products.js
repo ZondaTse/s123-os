@@ -37,13 +37,13 @@ router.get('/:id', auth, (req, res) => {
 
 // POST /api/products
 router.post('/', auth, upload.single('image'), (req, res) => {
-  const { sku, name, stock, cost, price, lifecycle_status } = req.body;
+  const { sku, name, stock, cost, price, lifecycle_status, skus_json } = req.body;
   if (!sku || !name) return res.status(400).json({ error: '款号和名称必填' });
   const image_url = req.file ? '/uploads/' + req.file.filename : null;
   const result = db.prepare(`
-    INSERT INTO products (sku,name,image_url,stock,cost,price,lifecycle_status)
-    VALUES (?,?,?,?,?,?,?)
-  `).run(sku, name, image_url, stock||0, cost||0, price||0, lifecycle_status||'new');
+    INSERT INTO products (sku,name,image_url,stock,cost,price,lifecycle_status,skus_json)
+    VALUES (?,?,?,?,?,?,?,?)
+  `).run(sku, name, image_url, stock||0, cost||0, price||0, lifecycle_status||'new', skus_json||null);
   res.json({ product: db.prepare('SELECT * FROM products WHERE id=?').get(result.lastInsertRowid) });
 });
 
@@ -51,7 +51,7 @@ router.post('/', auth, upload.single('image'), (req, res) => {
 router.put('/:id', auth, upload.single('image'), (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id=?').get(req.params.id);
   if (!product) return res.status(404).json({ error: '商品不存在' });
-  const { name, stock, cost, price, lifecycle_status } = req.body;
+  const { name, stock, cost, price, lifecycle_status, skus_json } = req.body;
   const image_url = req.file ? '/uploads/' + req.file.filename : product.image_url;
   db.prepare(`
     UPDATE products SET
@@ -61,10 +61,11 @@ router.put('/:id', auth, upload.single('image'), (req, res) => {
       cost = COALESCE(?,cost),
       price = COALESCE(?,price),
       lifecycle_status = COALESCE(?,lifecycle_status),
+      skus_json = COALESCE(?,skus_json),
       updated_at = datetime('now','localtime')
     WHERE id=?
   `).run(name||null, image_url, stock!=null?Number(stock):null, cost!=null?Number(cost):null,
-         price!=null?Number(price):null, lifecycle_status||null, req.params.id);
+         price!=null?Number(price):null, lifecycle_status||null, skus_json||null, req.params.id);
   res.json({ product: db.prepare('SELECT * FROM products WHERE id=?').get(req.params.id) });
 });
 

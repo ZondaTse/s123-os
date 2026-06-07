@@ -303,6 +303,20 @@ const Wealth = {
               <div class="product-card-status" style="color:${statusColor[p.lifecycle_status]||'#999'}">${statusLabel[p.lifecycle_status]||p.lifecycle_status}</div>
               <div class="product-card-name">${escHtml(p.name)}</div>
               <div class="product-card-price">¥${p.price||'–'}</div>
+              ${(()=>{
+                try {
+                  const skus = p.skus_json ? JSON.parse(p.skus_json) : null;
+                  if (skus && skus.length) {
+                    return '<div class="product-sku-stocks">' +
+                      skus.filter(s=>s.stock>0).slice(0,6).map(s=>
+                        `<span class="sku-stock-tag">${escHtml(s.properties||s.sku_outer_id||'')} <b>${s.stock}</b></span>`
+                      ).join('') +
+                      (skus.filter(s=>s.stock>0).length===0 ? '<span style="color:var(--red);font-size:11px">全部缺货</span>' : '') +
+                    '</div>';
+                  }
+                } catch(e){}
+                return p.stock!=null ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">库存 ${p.stock} 件</div>` : '';
+              })()}
             </div>
           </div>`).join('')}
       </div>
@@ -325,9 +339,20 @@ const Wealth = {
         document.getElementById('product-edit-name').value = d.name || '';
         document.getElementById('product-edit-price').value = d.price || '';
         document.getElementById('product-edit-stock').value = d.stock || '';
+        if (d.skus) {
+          let skusInput = document.getElementById('product-edit-skus-json');
+          if (!skusInput) {
+            skusInput = document.createElement('input');
+            skusInput.type = 'hidden'; skusInput.id = 'product-edit-skus-json'; skusInput.name = 'skus_json';
+            document.getElementById('product-edit-stock').parentNode.appendChild(skusInput);
+          }
+          skusInput.value = JSON.stringify(d.skus);
+        }
         document.getElementById('product-name-group').style.display = '';
         document.getElementById('product-price-group').style.display = '';
-        tip.textContent = `✅ 同步成功：${d.name}，库存${d.stock}，售价¥${d.price}`;
+        // SKU库存明细提示
+        const skuLines = (d.skus||[]).filter(s=>s.stock>0).slice(0,5).map(s=>`${s.properties||s.sku_outer_id}: ${s.stock}件`).join(' · ');
+        tip.textContent = `✅ 同步成功：${d.name}，售价¥${d.price}` + (skuLines ? `\n${skuLines}` : `，库存${d.stock}`);
         tip.style.color = 'var(--green)';
         if (d.image_url) toast('快麦有商品图，保存后自动导入');
       }

@@ -265,12 +265,15 @@ router.post('/sync-product', auth, async (req, res) => {
 
     // 拿库存
     let totalStock = 0;
+    let stockBySkuId = {};
     try {
       const wd = await kuaimaiRequest('erp.item.warehouse.list.get', { outerId: g.outerId, pageNo: 1, pageSize: 50 }, 'hmac');
       if (wd.success) {
         for (const s of (wd.skus || [])) {
           const mw = (s.mainWareHousesStock || []).find(w => w.code === 'A') || s.mainWareHousesStock[0] || {};
-          totalStock += mw.totalAvailableStock || 0;
+          const stock = mw.totalAvailableStock || 0;
+          stockBySkuId[s.skuOuterId] = stock;
+          totalStock += stock;
         }
       }
     } catch(e) {}
@@ -280,8 +283,15 @@ router.post('/sync-product', auth, async (req, res) => {
     const cost = parseFloat(g.purchasePrice || 0);
     const image_url = g.picPath && !g.picPath.includes('no_pic') ? g.picPath : null;
 
-    const updates = ['name=?', 'price=?', 'cost=?', 'stock=?', 'updated_at=datetime(\'now\',\'localtime\')'];
-    const params = [name, price, cost, totalStock];
+    // 组装skus_json
+    const skusJson = JSON.stringify((g.skus||[]).map(s=>({
+      sku_outer_id: s.skuOuterId||s.skuOuterId||'',
+      properties: s.propertiesName||s.properties||'',
+      stock: stockBySkuId[s.skuOuterId]||0,
+      price: parseFloat(s.priceOutput||g.priceOutput||0),
+    })));
+    const updates = ['name=?', 'price=?', 'cost=?', 'stock=?', 'skus_json=?', 'updated_at=datetime(\'now\',\'localtime\')'];
+    const params = [name, price, cost, totalStock, skusJson];
     if (image_url) { updates.push('image_url=?'); params.push(image_url); }
     params.push(product_id);
 
