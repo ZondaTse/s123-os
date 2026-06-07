@@ -227,7 +227,7 @@ router.get('/goods', auth, async (req, res) => {
       image_url: g.picPath && !g.picPath.includes('no_pic') ? g.picPath : null,
       stock: totalStock,
       skus,
-      _matched_total: itemData.total || 0,
+      _matched_total: 0,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
