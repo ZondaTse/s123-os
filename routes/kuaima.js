@@ -310,6 +310,15 @@ router.post('/sync-product', auth, async (req, res) => {
   }
 });
 
+// POST /api/kuaima/restart-server (管理员重启服务)
+router.post('/restart-server', auth, (req, res) => {
+  res.json({ ok: true, message: '服务重启中…' });
+  setTimeout(() => {
+    const { execSync } = require('child_process');
+    try { execSync('pm2 restart s123', { stdio: 'inherit' }); } catch(e) {}
+  }, 300);
+});
+
 module.exports = router;
 
 // 临时调试：GET /api/kuaima/debug?sku=xxx 返回所有尝试的原始结果

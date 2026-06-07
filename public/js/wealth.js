@@ -530,6 +530,11 @@ const My = {
           <div class="menu-row-label">同步快麦商品索引</div>
           <span class="menu-arrow" id="km-sync-status">›</span>
         </div>
+        <div class="menu-row" onclick="My.restartServer()">
+          <div class="menu-icon" style="background:#fff3e0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f57c00" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <div class="menu-row-label">重启服务器</div>
+          <span class="menu-arrow">›</span>
+        </div>
       </div>` : ''}
       <div style="height:40px"></div>
     `;
@@ -634,6 +639,18 @@ const My = {
         <span class="status-badge status-${t.status==='todo'?'todo':t.status==='doing'?'doing':'done'}">${t.status==='todo'?'待做':t.status==='doing'?'进行中':'完成'}</span>
       </div>`).join('');
     } catch { el.innerHTML = '<div class="empty"><div class="empty-text">加载失败</div></div>'; }
+  },
+
+  async restartServer() {
+    if (!window.confirm('确认重启服务器？重启期间约5秒不可用')) return;
+    try {
+      await API.post('/api/kuaima/restart-server', {});
+      toast('重启中，5秒后刷新页面');
+      setTimeout(() => location.reload(), 6000);
+    } catch(e) {
+      toast('已发送重启指令');
+      setTimeout(() => location.reload(), 6000);
+    }
   },
 
   async syncKmIndex() {
