@@ -89,8 +89,12 @@ router.get('/goods', auth, async (req, res) => {
       return res.status(400).json({ error: itemData.msg || '快麦查询失败', raw: itemData });
     }
 
-    // 只取 isSkuItem=1 的正常款，过滤散件
-    const items = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+    // 过滤：isSkuItem=1 且 outerId 包含输入款号（精确优先，兜底模糊）
+    const skuUpper = sku.toUpperCase();
+    const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+    let items = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
+    if (!items.length) items = allActive.filter(i => (i.title || '').toUpperCase().includes(skuUpper));
+    if (!items.length) items = allActive;
     if (!items.length) {
       return res.json({ found: false, message: '快麦未找到该款号（含"' + sku + '"的在售商品）', total: itemData.total || 0 });
     }
@@ -169,7 +173,10 @@ router.post('/sync-product', auth, async (req, res) => {
 
     if (!itemData.success) return res.status(400).json({ error: itemData.msg || '快麦查询失败' });
 
-    const items = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+    const skuU = sku.toUpperCase();
+    const allA = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+    let items = allA.filter(i => (i.outerId || '').toUpperCase().includes(skuU));
+    if (!items.length) items = allA;
     if (!items.length) return res.json({ found: false, message: '快麦未找到该款号' });
 
     const g = items[0];
