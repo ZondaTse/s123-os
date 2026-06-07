@@ -70,114 +70,100 @@ function kuaimaiRequest(method, extraParams, signMethod = 'hmac') {
 
 // GET /api/kuaima/goods?sku=xxx
 // 根据款号查询快麦商品信息
-// 主接口：erp.item.warehouse.list.get（查询仓库及商品库存信息）
-// 备用接口：erp.item.list.query
+// 实际返回结构: { outerId, skus:[{ skuOuterId, mainWareHousesStock:[...] }], success }
+// 注意: warehouse接口只返回库存，无商品名/价格/图片
 router.get('/goods', auth, async (req, res) => {
   const sku = (req.query.sku || '').trim();
   if (!sku) return res.status(400).json({ error: '请提供款号' });
 
   try {
-    let found = null;
+    let result = null;
     let lastData = null;
 
-    // 主接口：erp.item.warehouse.list.get
-    // outerId = 平台商家编码（款号），pageNo 必填
-    const warehouseAttempts = [
-      { outerId: sku },
-      { skuOuterId: sku },
-    ];
+    // 主接口：erp.item.warehouse.list.get，outerId = 款级别商家编码（如 S123-2604K4237）
+    const data = await kuaimaiRequest('erp.item.warehouse.list.get', {
+      outerId: sku,
+      pageNo: 1,
+      pageSize: 50,
+    }, 'hmac');
+    lastData = data;
 
-    for (const extraParams of warehouseAttempts) {
-      const data = await kuaimaiRequest('erp.item.warehouse.list.get', {
-        ...extraParams,
-        pageNo: 1,
-        pageSize: 20,
-      }, 'hmac');
-      lastData = data;
-
-      if (!data.success) {
-        const code = String(data.code || '');
-        if (code === '401' || code === '25') {
-          return res.status(401).json({ error: '签名错误或权限不足: ' + (data.msg || ''), raw: data });
-        }
-        continue;
-      }
-
-      const list = data.stockStatusVoList || [];
-      if (list.length) {
-        // 把同款的所有SKU聚合成一条商品
-        const first = list[0];
-        found = {
-          _source: 'warehouse',
-          name: first.title || first.shortTitle || sku,
-          price: parseFloat(first.sellingPrice || first.marketPrice || 0) / 100,
-          cost: parseFloat(first.purchasePrice || 0) / 100,
-          stock: list.reduce((sum, s) => sum + (s.totalAvailableStock || 0), 0),
-          image_url: first.picPath || first.skuPicPath || null,
-          outer_id: first.mainOuterId || first.outerId || '',
-          sys_item_id: String(first.sysItemId || ''),
-          skus: list.map(s => ({
-            sku_id: String(s.sysSkuId || ''),
-            properties: s.propertiesName || '',
-            stock: s.totalAvailableStock || 0,
-            lock_stock: s.totalLockStock || 0,
-            price: parseFloat(s.sellingPrice || 0) / 100,
-            outer_sku_id: s.outerId || '',
-            barcode: s.skuBarcode || s.itemBarcode || '',
+    if (data.success && (data.skus || []).length) {
+      // 聚合所有SKU的默认仓库可用库存
+      const skus = data.skus.map(s => {
+        const mainStock = (s.mainWareHousesStock || []).find(w => w.code === 'A') || s.mainWareHousesStock[0] || {};
+        return {
+          sku_outer_id: s.skuOuterId || '',
+          stock: mainStock.totalAvailableStock || 0,
+          lock_stock: mainStock.totalLockStock || 0,
+          warehouses: (s.mainWareHousesStock || []).map(w => ({
+            name: w.name,
+            code: w.code,
+            stock: w.totalAvailableStock || 0,
+            lock: w.totalLockStock || 0,
           })),
-          raw: list,
         };
-        break;
-      }
+      });
+
+      const totalStock = skus.reduce((sum, s) => sum + s.stock, 0);
+
+      result = {
+        found: true,
+        outer_id: data.outerId || sku,
+        stock: totalStock,
+        skus,
+        // 商品名/价格需通过 erp.item.list.query 补充
+        name: null,
+        price: null,
+        cost: null,
+        image_url: null,
+        _source: 'warehouse',
+      };
     }
 
-    // 备用接口：erp.item.list.query
-    if (!found) {
-      const fallbackAttempts = [
-        { sysOuterId: sku },
-        { outerId: sku },
-      ];
-      for (const extraParams of fallbackAttempts) {
-        const data = await kuaimaiRequest('erp.item.list.query', {
-          ...extraParams,
-          pageNo: 1,
-          pageSize: 10,
-        }, 'hmac');
-        lastData = data;
+    // 补充商品名/价格/图片：erp.item.list.query
+    const itemData = await kuaimaiRequest('erp.item.list.query', {
+      sysOuterId: sku,
+      pageNo: 1,
+      pageSize: 5,
+    }, 'hmac');
 
-        if (!data.success) continue;
-
-        const list = data.items || data.goodsList || data.list || [];
-        if (list.length) {
-          const g = list[0];
-          found = {
-            _source: 'item_list',
-            name: g.name || g.goodsName || g.title || sku,
-            price: parseFloat(g.retailPrice || g.price || g.salePrice || 0),
-            cost: parseFloat(g.purchasePrice || g.costPrice || 0),
-            stock: parseInt(g.totalStock || g.stock || g.remainStock || 0),
-            image_url: g.picUrl || g.mainPic || g.imgUrl || null,
-            outer_id: g.outerId || g.sysOuterId || '',
-            sys_item_id: String(g.sysItemId || g.id || ''),
+    if (itemData.success) {
+      const list = itemData.items || itemData.goodsList || itemData.list || [];
+      if (list.length) {
+        const g = list[0];
+        const info = {
+          name: g.name || g.goodsName || g.title || null,
+          price: parseFloat(g.retailPrice || g.price || g.salePrice || 0) || null,
+          cost: parseFloat(g.purchasePrice || g.costPrice || 0) || null,
+          image_url: g.picUrl || g.mainPic || g.imgUrl || null,
+          sys_item_id: String(g.sysItemId || g.id || ''),
+        };
+        if (result) {
+          Object.assign(result, info);
+        } else {
+          // warehouse没找到，但item找到了
+          result = {
+            found: true,
+            outer_id: sku,
+            stock: parseInt(g.totalStock || g.stock || 0),
             skus: (g.skuList || g.skus || []).map(s => ({
-              sku_id: s.skuId || s.sysSkuId || s.outerSkuId,
-              properties: s.properties || s.specName || s.spec || '',
+              sku_outer_id: s.outerSkuId || s.skuOuterId || '',
               stock: s.stock || s.remainStock || 0,
               price: s.retailPrice || s.price || g.retailPrice || 0,
-              outer_sku_id: s.outerSkuId || s.skuOuterId || '',
             })),
-            raw: g,
+            _source: 'item_list',
+            ...info,
           };
-          break;
         }
       }
     }
 
-    if (!found) {
-      return res.json({ found: false, message: '快麦未找到该款号，请检查商家编码是否正确', raw: lastData });
+    if (!result) {
+      return res.json({ found: false, message: '快麦未找到该款号，请确认商家编码格式（如 S123-2604K4237）', raw: lastData });
     }
 
-    res.json({ found: true, ...found });
+    res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
