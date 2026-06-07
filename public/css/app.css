@@ -1233,3 +1233,11 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   color: var(--text, #fff);
   font-weight: 600;
 }
+
+.sku-stock-empty {
+  background: rgba(255,59,48,0.12) !important;
+  color: var(--red, #ff3b30) !important;
+}
+.sku-stock-empty b {
+  color: var(--red, #ff3b30) !important;
+}

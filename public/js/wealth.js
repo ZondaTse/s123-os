@@ -308,10 +308,14 @@ const Wealth = {
                   const skus = p.skus_json ? JSON.parse(p.skus_json) : null;
                   if (skus && skus.length) {
                     return '<div class="product-sku-stocks">' +
-                      skus.filter(s=>s.stock>0).slice(0,6).map(s=>
-                        `<span class="sku-stock-tag">${escHtml(s.properties||s.sku_outer_id||'')} <b>${s.stock}</b></span>`
-                      ).join('') +
-                      (skus.filter(s=>s.stock>0).length===0 ? '<span style="color:var(--red);font-size:11px">全部缺货</span>' : '') +
+                      skus.map(s => {
+                        const label = escHtml(s.properties||s.sku_outer_id||'');
+                        if (s.stock > 0) {
+                          return `<span class="sku-stock-tag">${label} <b>${s.stock}</b></span>`;
+                        } else {
+                          return `<span class="sku-stock-tag sku-stock-empty">${label} <b>缺</b></span>`;
+                        }
+                      }).join('') +
                     '</div>';
                   }
                 } catch(e){}
