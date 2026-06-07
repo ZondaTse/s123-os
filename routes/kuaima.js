@@ -106,7 +106,9 @@ async function syncKmIndex() {
   }
 }
 
-// 每天 00:00 自动全量同步
+// 启动5秒后立即同步一次
+setTimeout(syncKmIndex, 5000);
+// 每天 00:00 定时同步
 function scheduleDailySync() {
   const now = new Date(Date.now() + 8 * 3600000); // CST
   const msUntilMidnight =
@@ -115,7 +117,7 @@ function scheduleDailySync() {
     syncKmIndex();
     setInterval(syncKmIndex, 24 * 3600 * 1000);
   }, msUntilMidnight);
-  console.log(`⏰ 快麦索引将在 ${Math.round(msUntilMidnight/60000)} 分钟后同步（每日00:00）`);
+  console.log(`⏰ 快麦索引将在 ${Math.round(msUntilMidnight/60000)} 分钟后每日定时同步`);
 }
 scheduleDailySync();
 
