@@ -68,6 +68,54 @@ function kuaimaiRequest(method, extraParams, signMethod = 'hmac') {
   });
 }
 
+// ── 快麦商品索引缓存 ──────────────────────────────────────────
+// 把所有商品的 outerId/title 拉到本地 km_item_index 表，供模糊搜索用
+let _indexSyncing = false;
+
+async function syncKmIndex() {
+  if (_indexSyncing) return;
+  _indexSyncing = true;
+  try {
+    const upsert = db.prepare(
+      'INSERT OR REPLACE INTO km_item_index (outer_id, sys_item_id, title, synced_at) VALUES (?,?,?,datetime(\'now\',\'localtime\'))'
+    );
+    let pageNo = 1;
+    const pageSize = 100;
+    let total = null;
+    let fetched = 0;
+    do {
+      const data = await kuaimaiRequest('item.list.query', { pageNo, pageSize }, 'hmac');
+      if (!data.success) break;
+      const items = data.items || [];
+      if (total === null) total = data.total || 0;
+      const ins = db.transaction(list => {
+        for (const i of list) {
+          if (i.outerId) upsert.run(i.outerId, String(i.sysItemId || ''), i.title || null);
+        }
+      });
+      ins(items);
+      fetched += items.length;
+      pageNo++;
+      if (items.length < pageSize) break;
+    } while (fetched < total);
+    console.log(`✅ km_item_index synced: ${fetched} items`);
+  } catch(e) {
+    console.error('km_item_index sync error:', e.message);
+  } finally {
+    _indexSyncing = false;
+  }
+}
+
+// 启动时同步，之后每6小时同步一次
+setTimeout(syncKmIndex, 5000);
+setInterval(syncKmIndex, 6 * 3600 * 1000);
+
+// GET /api/kuaima/sync-index (手动触发重新同步)
+router.post('/sync-index', auth, (req, res) => {
+  syncKmIndex();
+  res.json({ ok: true, message: '索引同步已启动，约需1-2分钟' });
+});
+
 // GET /api/kuaima/goods?sku=xxx
 // 查询商品信息
 // 流程：
@@ -78,30 +126,47 @@ router.get('/goods', auth, async (req, res) => {
   if (!sku) return res.status(400).json({ error: '请提供款号' });
 
   try {
-    // Step 1: 用 item.list.query 模糊匹配，拿商品基本信息
-    const itemData = await kuaimaiRequest('item.list.query', {
-      sysOuterId: sku,
-      pageNo: 1,
-      pageSize: 20,
-    }, 'hmac');
-
-    if (!itemData.success) {
-      return res.status(400).json({ error: itemData.msg || '快麦查询失败', raw: itemData });
-    }
-
-    // 过滤：isSkuItem=1 且 outerId 包含输入款号（精确优先，兜底模糊）
+    // Step 1: 本地索引查找 outerId（包含输入款号的）
     const skuUpper = sku.toUpperCase();
-    const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
-    let items = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
-    if (!items.length) items = allActive.filter(i => (i.title || '').toUpperCase().includes(skuUpper));
-    if (!items.length) items = allActive;
-    if (!items.length) {
-      return res.json({ found: false, message: '快麦未找到该款号（含"' + sku + '"的在售商品）', total: itemData.total || 0 });
+    const idxRows = db.prepare(
+      "SELECT outer_id, title FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 10"
+    ).all('%' + skuUpper + '%');
+
+    let outerId = '';
+    if (idxRows.length) {
+      // 优先精确包含，取第一条
+      outerId = idxRows[0].outer_id;
     }
 
-    // 取第一条（最相关）
-    const g = items[0];
-    const outerId = g.outerId || '';
+    // Step 1b: 如果本地没有（索引未同步），降级用 item.list.query + outerId精确
+    let g = null;
+    if (outerId) {
+      const itemData = await kuaimaiRequest('item.list.query', {
+        outerId: outerId,
+        pageNo: 1,
+        pageSize: 5,
+      }, 'hmac');
+      if (itemData.success) {
+        const all = (itemData.items || []).filter(i => i.isSkuItem === 1);
+        g = all.find(i => (i.outerId || '').toUpperCase() === outerId.toUpperCase()) || all[0] || null;
+      }
+    }
+
+    // 降级：索引没找到，用 item.list.query 拉前20条在内存过滤
+    if (!g) {
+      const itemData = await kuaimaiRequest('item.list.query', {
+        pageNo: 1,
+        pageSize: 100,
+      }, 'hmac');
+      if (!itemData.success) {
+        return res.status(400).json({ error: itemData.msg || '快麦查询失败' });
+      }
+      const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+      const matched = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
+      g = matched[0] || null;
+      if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号，索引同步中请稍后再试' });
+      outerId = g.outerId || '';
+    }
 
     // Step 2: warehouse接口拿库存（用精确 outerId）
     let stockMap = {}; // skuOuterId -> stock

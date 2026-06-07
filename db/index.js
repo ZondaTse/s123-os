@@ -155,6 +155,13 @@ function init() {
       content    TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
     );
+
+    CREATE TABLE IF NOT EXISTS km_item_index (
+      outer_id    TEXT PRIMARY KEY,
+      sys_item_id TEXT NOT NULL,
+      title       TEXT,
+      synced_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
   `);
 
   const upsert = db.prepare('INSERT OR IGNORE INTO exp_config VALUES (?,?)');
