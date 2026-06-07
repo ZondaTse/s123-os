@@ -85,9 +85,13 @@ async function syncKmIndex() {
     let fetched = 0;
     do {
       const data = await kuaimaiRequest('item.list.query', { pageNo, pageSize }, 'hmac');
-      if (!data.success) break;
+      if (!data.success) {
+        console.error('km sync page', pageNo, 'failed:', data.code, data.msg);
+        break;
+      }
       const items = data.items || [];
       if (total === null) total = data.total || 0;
+      console.log(`km sync page ${pageNo}/${Math.ceil(total/pageSize)}: ${items.length} items, total=${total}`);
       const ins = db.transaction(list => {
         for (const i of list) {
           if (i.outerId) upsert.run(i.outerId, String(i.sysItemId || ''), i.title || null);
@@ -163,19 +167,21 @@ router.get('/goods', auth, async (req, res) => {
       }
     }
 
-    // 降级：索引没找到，用 item.list.query 拉前20条在内存过滤
+    // 降级：索引没找到，用 sysOuterId 精确查（快麦模糊匹配）
     if (!g) {
       const itemData = await kuaimaiRequest('item.list.query', {
+        sysOuterId: sku,
         pageNo: 1,
-        pageSize: 100,
+        pageSize: 20,
       }, 'hmac');
       if (!itemData.success) {
         return res.status(400).json({ error: itemData.msg || '快麦查询失败' });
       }
       const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+      // 过滤 outerId 包含输入款号的
       const matched = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
-      g = matched[0] || null;
-      if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号，索引同步中请稍后再试' });
+      g = matched[0] || allActive[0] || null;
+      if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号' });
       outerId = g.outerId || '';
     }
 
