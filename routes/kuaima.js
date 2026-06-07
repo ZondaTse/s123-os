@@ -106,9 +106,18 @@ async function syncKmIndex() {
   }
 }
 
-// 启动时同步，之后每6小时同步一次
-setTimeout(syncKmIndex, 5000);
-setInterval(syncKmIndex, 6 * 3600 * 1000);
+// 每天 00:00 自动全量同步
+function scheduleDailySync() {
+  const now = new Date(Date.now() + 8 * 3600000); // CST
+  const msUntilMidnight =
+    ((24 - now.getUTCHours()) * 3600 - now.getUTCMinutes() * 60 - now.getUTCSeconds()) * 1000;
+  setTimeout(() => {
+    syncKmIndex();
+    setInterval(syncKmIndex, 24 * 3600 * 1000);
+  }, msUntilMidnight);
+  console.log(`⏰ 快麦索引将在 ${Math.round(msUntilMidnight/60000)} 分钟后同步（每日00:00）`);
+}
+scheduleDailySync();
 
 // GET /api/kuaima/sync-index (手动触发重新同步)
 router.post('/sync-index', auth, (req, res) => {
