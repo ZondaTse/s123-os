@@ -131,6 +131,13 @@ router.post('/sync-index', auth, (req, res) => {
   res.json({ ok: true, message: '索引同步已启动，约需1-2分钟' });
 });
 
+// GET /api/kuaima/index-status (查看索引状态)
+router.get('/index-status', auth, (req, res) => {
+  const count = db.prepare('SELECT COUNT(*) as n FROM km_item_index').get();
+  const sample = db.prepare('SELECT outer_id, title FROM km_item_index LIMIT 5').all();
+  res.json({ count: count.n, syncing: _indexSyncing, sample });
+});
+
 // GET /api/kuaima/goods?sku=xxx
 // 查询商品信息
 // 流程：
@@ -180,8 +187,8 @@ router.get('/goods', auth, async (req, res) => {
       const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
       // 过滤 outerId 包含输入款号的
       const matched = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
-      g = matched[0] || allActive[0] || null;
-      if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号' });
+      g = matched[0] || null;
+      if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号，请等待索引同步完成（约2分钟）' });
       outerId = g.outerId || '';
     }
 
