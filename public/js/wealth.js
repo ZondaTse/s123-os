@@ -855,33 +855,25 @@ const My = {
     if (!el) return;
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = 'none';
-    // 用window.innerHeight精确计算高度，避免iOS dvh bug
-    const navH = 48 + 34; // tab-bar + top nav bar 约82px
-    const iframeH = window.innerHeight - navH;
+    // 让my-content变成flex column，iframe用flex:1自然撑满
+    el.style.cssText = 'display:flex;flex-direction:column;overflow:hidden;padding:0';
     el.innerHTML = `
-      <div id="salary-nav" style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border);flex-shrink:0">
         <button onclick="My.closeSalary()" style="background:none;border:none;color:var(--green);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;font-size:16px;font-weight:600;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--bg2)'" ontouchend="this.style.background='none'">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           返回
         </button>
         <span style="font-size:16px;font-weight:700;color:var(--text)">工资简报</span>
       </div>
-      <iframe id="salary-iframe" src="/salary.html" style="display:block;width:100%;border:none"></iframe>
+      <iframe src="/salary.html" style="flex:1;width:100%;border:none;min-height:0"></iframe>
     `;
-    // 等DOM渲染后精确设置iframe高度
-    requestAnimationFrame(() => {
-      const nav = document.getElementById('salary-nav');
-      const iframe = document.getElementById('salary-iframe');
-      if (nav && iframe) {
-        const remaining = window.innerHeight - nav.getBoundingClientRect().bottom;
-        iframe.style.height = Math.max(remaining, 400) + 'px';
-      }
-    });
   },
 
   closeSalary() {
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = '';
+    const el = document.getElementById('my-content');
+    if (el) el.style.cssText = '';  // 还原样式
     this.render();
   },
 
