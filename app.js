@@ -22,9 +22,36 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   // 异步执行，不阻塞响应
   setTimeout(() => {
     try {
-      console.log('🔄 Webhook received, pulling latest code...');
-      execSync('cd /root/s123 && git pull origin main', { stdio: 'inherit' });
-      console.log('✅ Pull done, restarting...');
+      console.log('🔄 Webhook received, deploying via curl...');
+      const base = 'https://raw.githubusercontent.com/ZondaTse/s123-os/main';
+      const files = [
+        'app.js',
+        'db/index.js',
+        'routes/auth.js',
+        'routes/messages.js',
+        'routes/tasks.js',
+        'routes/products.js',
+        'routes/contents.js',
+        'routes/experiences.js',
+        'routes/plans.js',
+        'routes/gmv.js',
+        'routes/users.js',
+        'routes/moments.js',
+        'routes/kuaima.js',
+        'routes/sse.js',
+        'public/index.html',
+        'public/css/app.css',
+        'public/js/utils.js',
+        'public/js/chat.js',
+        'public/js/exec.js',
+        'public/js/wealth.js',
+      ];
+      for (const f of files) {
+        try {
+          execSync(`curl -sf "${base}/${f}" -o "/root/s123/${f}"`, { timeout: 30000 });
+        } catch(e) { console.error('curl failed for', f, e.message); }
+      }
+      console.log('✅ Files updated, restarting...');
       execSync('pm2 restart s123', { stdio: 'inherit' });
     } catch (e) {
       console.error('❌ Webhook deploy failed:', e.message);

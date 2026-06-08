@@ -258,15 +258,19 @@ router.post('/sync-product', auth, async (req, res) => {
   if (!product_id || !sku) return res.status(400).json({ error: '缺少参数' });
 
   try {
+    // 先查本地索引找精确outerId
+    const skuU = sku.toUpperCase();
+    const idxRow = db.prepare("SELECT outer_id FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 1").get('%' + skuU + '%');
+    const queryOuterId = idxRow ? idxRow.outer_id : sku;
+
     const itemData = await kuaimaiRequest('item.list.query', {
-      sysOuterId: sku,
+      outerId: queryOuterId,
       pageNo: 1,
       pageSize: 10,
     }, 'hmac');
 
     if (!itemData.success) return res.status(400).json({ error: itemData.msg || '快麦查询失败' });
 
-    const skuU = sku.toUpperCase();
     const allA = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
     let items = allA.filter(i => (i.outerId || '').toUpperCase().includes(skuU));
     if (!items.length) items = allA;
