@@ -101,6 +101,11 @@ setInterval(() => {
   } catch {}
 }, 1000);
 
+// 工资简报独立页面（必须在SPA fallback之前）
+app.get('/salary.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/salary.html'));
+});
+
 // SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
