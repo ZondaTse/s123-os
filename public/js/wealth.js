@@ -855,16 +855,28 @@ const My = {
     if (!el) return;
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = 'none';
+    // 用window.innerHeight精确计算高度，避免iOS dvh bug
+    const navH = 48 + 34; // tab-bar + top nav bar 约82px
+    const iframeH = window.innerHeight - navH;
     el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:10">
+      <div id="salary-nav" style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border)">
         <button onclick="My.closeSalary()" style="background:none;border:none;color:var(--green);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;font-size:16px;font-weight:600;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--bg2)'" ontouchend="this.style.background='none'">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           返回
         </button>
         <span style="font-size:16px;font-weight:700;color:var(--text)">工资简报</span>
       </div>
-      <iframe src="/salary.html" style="display:block;width:100%;height:calc(100dvh - 110px);border:none"></iframe>
+      <iframe id="salary-iframe" src="/salary.html" style="display:block;width:100%;border:none"></iframe>
     `;
+    // 等DOM渲染后精确设置iframe高度
+    requestAnimationFrame(() => {
+      const nav = document.getElementById('salary-nav');
+      const iframe = document.getElementById('salary-iframe');
+      if (nav && iframe) {
+        const remaining = window.innerHeight - nav.getBoundingClientRect().bottom;
+        iframe.style.height = Math.max(remaining, 400) + 'px';
+      }
+    });
   },
 
   closeSalary() {
