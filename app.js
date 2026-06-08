@@ -46,13 +46,15 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
         'public/js/exec.js',
         'public/js/wealth.js',
       ];
+      let updated = 0;
       for (const f of files) {
         try {
-          execSync(`curl -sf "${base}/${f}" -o "/root/s123/${f}"`, { timeout: 30000 });
+          execSync(`curl -sf --max-time 15 --retry 2 "${base}/${f}" -o "/root/s123/${f}"`, { timeout: 20000 });
+          updated++;
         } catch(e) { console.error('curl failed for', f, e.message); }
       }
-      console.log('✅ Files updated, restarting...');
-      execSync('pm2 restart s123', { stdio: 'inherit' });
+      console.log(`✅ ${updated}/${files.length} files updated, restarting...`);
+      setTimeout(() => execSync('pm2 restart s123', { stdio: 'inherit' }), 500);
     } catch (e) {
       console.error('❌ Webhook deploy failed:', e.message);
     }
