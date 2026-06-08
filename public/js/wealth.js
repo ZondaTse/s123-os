@@ -851,21 +851,41 @@ const My = {
   },
 
   openSalary() {
-    // 清除历史版本遗留的动态创建节点（非静态HTML的salary-overlay）
-    document.querySelectorAll('[id^="salary-"]').forEach(el => {
-      if (el.id !== 'salary-overlay' && el.id !== 'salary-iframe' &&
-          el.id !== 'salary-access-overlay' && el.id !== 'salary-access-list') {
-        el.remove();
-      }
-    });
-    // 懒加载 iframe src
+    const el = document.getElementById('my-content');
+    if (!el) return;
+    // 隐藏主题切换按钮
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) themeBtn.style.display = 'none';
+    el.style.padding = '0';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10">
+        <button onclick="My.closeSalary()" style="background:none;border:none;color:var(--green);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;font-size:16px;font-weight:600;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--bg2)'" ontouchend="this.style.background='none'">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          返回
+        </button>
+        <span style="font-size:16px;font-weight:700;color:var(--text)">工资简报</span>
+      </div>
+      <iframe id="salary-iframe" src="/salary.html" style="flex:1;border:none;width:100%;height:0;min-height:0" loading="lazy"></iframe>
+    `;
+    // 让iframe撑满剩余高度
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.overflow = 'hidden';
     const iframe = document.getElementById('salary-iframe');
-    if (iframe && !iframe.src) iframe.src = '/salary.html';
-    showSheet('salary-overlay');
+    if (iframe) iframe.style.flex = '1';
   },
 
   closeSalary() {
-    hideSheet('salary-overlay');
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) themeBtn.style.display = '';
+    const el = document.getElementById('my-content');
+    if (el) {
+      el.style.padding = '';
+      el.style.display = '';
+      el.style.flexDirection = '';
+      el.style.overflow = '';
+    }
+    this.render();
   },
 
   async manageSalaryAccess() {
@@ -875,7 +895,7 @@ const My = {
     try {
       const d = await API.get('/api/users');
       list.innerHTML = d.users.map(u => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border,rgba(0,0,0,0.07))">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border)">
           <div style="display:flex;align-items:center;gap:10px">
             ${getAvatarHtml(u, 36, '50%')}
             <div>
