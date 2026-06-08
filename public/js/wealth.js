@@ -391,7 +391,10 @@ const Wealth = {
 
           // 构建HTML表格
           let html = `<div style="color:var(--green);font-size:14px;font-weight:600;margin-bottom:8px">✅ ${d.name} · 共${d.stock}件</div>`;
-          html += `<button onclick="navigator.clipboard.writeText(${JSON.stringify(copyText)}).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">📋 一键复制</button>`;
+          const copyId = 'copy_' + Date.now();
+          window.__copyData = window.__copyData || {};
+          window.__copyData[copyId] = copyText;
+          html += `<button onclick="navigator.clipboard.writeText(window.__copyData['${copyId}']).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">📋 一键复制</button>`;
           html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:15px;width:100%">';
           // 表头
           html += '<tr>';
