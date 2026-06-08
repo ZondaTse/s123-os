@@ -352,49 +352,75 @@ const Wealth = {
           }
           skusInput.value = JSON.stringify(d.skus);
         }
-        document.getElementById('product-name-group').style.display = '';
-        document.getElementById('product-price-group').style.display = '';
+        document.getElementById('product-name-group').style.display = 'none';
+        document.getElementById('product-price-group').style.display = 'none';
         // SKU库存表格展示
         tip.style.color = 'var(--green)';
         const skus = d.skus || [];
+        // 尺码标准排序
+        const sizeOrder = ['XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL','均码'];
+        function sizeRank(sz) {
+          const i = sizeOrder.indexOf(sz.toUpperCase());
+          return i >= 0 ? i : 99;
+        }
         if (skus.length) {
-          // 解析颜色和尺码
           const colorMap = {};
           const sizeSet = new Set();
           skus.forEach(s => {
-            const parts = (s.properties || s.sku_outer_id || '').split(/[-;]/);
-            const color = parts[0] || '默认';
-            const size = parts[1] || '';
+            const props = s.properties || '';
+            // 支持 "颜色;尺码" 或 "颜色-尺码" 格式
+            const sep = props.includes(';') ? ';' : '-';
+            const idx = props.indexOf(sep);
+            const color = idx > 0 ? props.slice(0, idx).trim() : (props || '默认');
+            const size = idx > 0 ? props.slice(idx+1).trim() : '';
             if (size) sizeSet.add(size);
             if (!colorMap[color]) colorMap[color] = {};
-            colorMap[color][size || '库存'] = s.stock || 0;
+            colorMap[color][size || '_'] = s.stock || 0;
           });
-          const sizes = [...sizeSet];
-          // 构建表格HTML
-          let html = `<div style="color:var(--green);margin-bottom:6px">✅ 同步成功：${d.name}，库存${d.stock}件</div>`;
-          html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:11px;width:100%">';
-          html += '<tr><th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:left">颜色</th>';
-          sizes.forEach(sz => { html += `<th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:center">${sz}</th>`; });
-          html += '<th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:center">合计</th></tr>';
+          // 尺码从小到大排序
+          const sizes = [...sizeSet].sort((a,b) => sizeRank(a) - sizeRank(b));
+
+          // 生成纯文本用于复制
+          const header = ['颜色', ...sizes, '合计'].join('\t');
+          const rows = Object.entries(colorMap).map(([color, stocks]) => {
+            const total = sizes.reduce((a,sz)=>a+(stocks[sz]||0),0);
+            return [color, ...sizes.map(sz=>stocks[sz]||0), total].join('\t');
+          });
+          const totalRow = ['合计', ...sizes.map(sz=>Object.values(colorMap).reduce((a,cm)=>a+(cm[sz]||0),0)), d.stock].join('\t');
+          const copyText = d.name + '\n' + [header, ...rows, totalRow].join('\n');
+
+          // 构建HTML表格
+          let html = `<div style="color:var(--green);font-size:14px;font-weight:600;margin-bottom:8px">✅ ${d.name} · 共${d.stock}件</div>`;
+          html += `<button onclick="navigator.clipboard.writeText(${JSON.stringify(copyText)}).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">📋 一键复制</button>`;
+          html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:15px;width:100%">';
+          // 表头
+          html += '<tr>';
+          ['颜色', ...sizes, '合计'].forEach((h,i) => {
+            html += `<th style="padding:6px 12px;border:1px solid var(--sep);background:var(--fill2);text-align:${i===0?'left':'center'};white-space:nowrap">${h}</th>`;
+          });
+          html += '</tr>';
+          // 数据行
           Object.entries(colorMap).forEach(([color, stocks]) => {
-            const total = Object.values(stocks).reduce((a,b)=>a+b,0);
-            html += `<tr><td style="padding:3px 8px;border:1px solid var(--sep)">${color}</td>`;
+            const total = sizes.reduce((a,sz)=>a+(stocks[sz]||0),0);
+            html += '<tr>';
+            html += `<td style="padding:6px 12px;border:1px solid var(--sep);font-weight:500;white-space:nowrap">${color}</td>`;
             sizes.forEach(sz => {
               const n = stocks[sz] || 0;
-              const style = n === 0 ? 'color:var(--red)' : '';
-              html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;${style}">${n === 0 ? '缺' : n}</td>`;
+              const st = n === 0 ? 'color:var(--red);font-weight:600' : 'font-size:16px;font-weight:600';
+              html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;${st}">${n === 0 ? '缺' : n}</td>`;
             });
-            html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${total}</td></tr>`;
+            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px">${total}</td>`;
+            html += '</tr>';
           });
           // 合计行
-          html += '<tr style="background:var(--fill2)">';
-          html += '<td style="padding:3px 8px;border:1px solid var(--sep);font-weight:600">合计</td>';
+          html += '<tr style="background:rgba(52,199,89,0.1)">';
+          html += '<td style="padding:6px 12px;border:1px solid var(--sep);font-weight:700">合计</td>';
           sizes.forEach(sz => {
-            const total = Object.values(colorMap).reduce((a,cm)=>a+(cm[sz]||0),0);
-            html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${total}</td>`;
+            const t = Object.values(colorMap).reduce((a,cm)=>a+(cm[sz]||0),0);
+            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px">${t}</td>`;
           });
-          html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${d.stock}</td></tr>`;
-          html += '</table></div>';
+          html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px;color:var(--green)">${d.stock}</td>`;
+          html += '</tr></table></div>';
           tip.innerHTML = html;
         } else {
           tip.textContent = `✅ 同步成功：${d.name}，库存${d.stock}`;
