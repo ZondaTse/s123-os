@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>S123 HOMME · 工资简报</title>
+<style>
+/* ── CSS VARIABLES — light / dark ── */
+:root {
+  --bg:           #f2f2f7;
+  --bg2:          #ffffff;
+  --bg3:          #e5e5ea;
+  --bg4:          #d1d1d6;
+  --fg:           #1c1c1e;
+  --fg2:          #3a3a3c;
+  --fg3:          #636366;
+  --fg4:          #8e8e93;
+  --fg5:          #aeaeb2;
+  --sep:          rgba(0,0,0,0.08);
+  --shadow:       0 1px 4px rgba(0,0,0,0.07);
+  --shadow-lg:    0 4px 20px rgba(0,0,0,0.10);
+  --nav-bg:       rgba(242,242,247,0.88);
+  --sheet-bg:     #f2f2f7;
+  --overlay-bg:   rgba(0,0,0,0.28);
+  --handle:       rgba(0,0,0,0.15);
+  --close-btn:    rgba(0,122,255,0.92);
+
+  /* accent — light mode: standard iOS */
+  --red:    #ff3b30;
+  --green:  #34c759;
+  --blue:   #007aff;
+  --blue2:  #5b9fd6;
+  --orange: #ff9500;
+
+  /* accent bg tints — light: soft pastels */
+  --tint-red:    #fff0f0;
+  --tint-green:  #f0fff4;
+  --tint-blue:   #e8f2fb;
+  --tint-orange: rgba(255,149,0,0.10);
+
+  /* tag bg — light */
+  --tag-up-bg:  #fff0f0;
+  --tag-dn-bg:  #f0fff4;
+  --tag-neu-bg: #e8f2fb;
+
+  /* numrow separator */
+  --numrow-sep: rgba(0,0,0,0.07);
+
+  /* dept card backgrounds — light: soft pastels */
+  --dept-lavender: #ede8f5;
+  --dept-sage:     #e8f0e4;
+  --dept-sky:      #e4eef8;
+  --dept-sand:     #f5efe6;
+  --dept-lilac:    #ede8f5;
+  --dept-mint:     #e4f2ed;
+  --dept-stone:    #fde8ee;
+  --dept-ice:      #e6f0f5;
+
+  /* group banner bg — light: richer tint */
+  --banner-lavender: #ddd5f2;
+  --banner-sage:     #cddfc5;
+  --banner-sky:      #c5d9ef;
+  --banner-sand:     #e8d8c2;
+  --banner-lilac:    #ddd5f2;
+  --banner-mint:     #bfe0d4;
+  --banner-stone:    #f2dce0;
+  --banner-ice:      #c5dceb;
+
+  /* group banner border — light */
+  --border-lavender: #9980cc;
+  --border-sage:     #6aa062;
+  --border-sky:      #5090c8;
+  --border-sand:     #b09060;
+  --border-lilac:    #9980cc;
+  --border-mint:     #50a888;
+  --border-stone:    #c8a0a8;
+  --border-ice:      #5090b0;
+
+  /* reason/chart panel */
+  --panel-bg: rgba(255,255,255,0.65);
+
+  /* KPI */
+  --kpi-prev-bg: #e8f2fb;
+  --kpi-prev-fg: #5b9fd6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:           #000000;
+    --bg2:          #1c1c1e;
+    --bg3:          #2c2c2e;
+    --bg4:          #3a3a3c;
+    --fg:           #ffffff;
+    --fg2:          #ebebf5;
+    --fg3:          #aeaeb2;
+    --fg4:          #636366;
+    --fg5:          #48484a;
+    --sep:          rgba(255,255,255,0.08);
+    --shadow:       0 1px 0 rgba(255,255,255,0.04);
+    --shadow-lg:    0 4px 20px rgba(0,0,0,0.5);
+    --nav-bg:       rgba(0,0,0,0.85);
+    --sheet-bg:     #1c1c1e;
+    --overlay-bg:   rgba(0,0,0,0.55);
+    --handle:       rgba(255,255,255,0.18);
+    --close-btn:    #0a84ff;
+
+    /* accent — dark mode: brighter iOS variants */
+    --red:    #ff453a;
+    --green:  #30d158;
+    --blue:   #0a84ff;
+    --blue2:  #409cff;
+    --orange: #ff9f0a;
+
+    /* accent bg tints — dark: very subtle, nearly invisible */
+    --tint-red:    rgba(255,69,58,0.15);
+    --tint-green:  rgba(48,209,88,0.12);
+    --tint-blue:   rgba(10,132,255,0.15);
+    --tint-orange: rgba(255,159,10,0.12);
+
+    /* tag bg — dark */
+    --tag-up-bg:  rgba(255,69,58,0.18);
+    --tag-dn-bg:  rgba(48,209,88,0.15);
+    --tag-neu-bg: rgba(10,132,255,0.18);
+
+    /* numrow separator */
+    --numrow-sep: rgba(255,255,255,0.07);
+
+    /* dept card backgrounds — dark: all just slightly lighter than bg2 */
+    /* No saturated colors — subtle elevation only */
+    --dept-lavender: #28252e;
+    --dept-sage:     #22282a;
+    --dept-sky:      #1e2530;
+    --dept-sand:     #2a2620;
+    --dept-lilac:    #28252e;
+    --dept-mint:     #1e2a26;
+    --dept-stone:    #2a2028;
+    --dept-ice:      #1e252a;
+
+    /* group banner bg — dark: same as dept but slightly stronger */
+    --banner-lavender: #312d3a;
+    --banner-sage:     #293030;
+    --banner-sky:      #243040;
+    --banner-sand:     #332e26;
+    --banner-lilac:    #312d3a;
+    --banner-mint:     #253430;
+    --banner-stone:    #342830;
+    --banner-ice:      #243038;
+
+    /* group banner border — dark: muted, no saturation */
+    --border-lavender: #48405a;
+    --border-sage:     #3a4a3e;
+    --border-sky:      #304858;
+    --border-sand:     #4a4034;
+    --border-lilac:    #48405a;
+    --border-mint:     #305048;
+    --border-stone:    #4a3840;
+    --border-ice:      #2e4458;
+
+    /* reason/chart panel */
+    --panel-bg: rgba(44,44,46,0.9);
+
+    /* KPI */
+    --kpi-prev-bg: rgba(64,156,255,0.12);
+    --kpi-prev-fg: #409cff;
+  }
+}
+
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;
+  background:var(--bg); color:var(--fg);
+  min-height:100vh; padding-bottom:40px;
+}
+
+/* ── MONTH NAV BAR ── */
+.month-nav {
+  display:flex; align-items:center;
+  padding:14px 16px 6px; gap:8px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.month-nav::-webkit-scrollbar { display:none; }
+.month-chip {
+  flex-shrink:0; padding:7px 18px; border-radius:20px;
+  font-size:14px; font-weight:600;
+  background:var(--bg3); color:var(--fg2);
+  cursor:pointer; border:none; font-family:inherit;
+  transition:all 0.18s;
+}
+.month-chip.active { background:var(--fg); color:var(--bg); }
+
+/* KPI */
+.kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:14px 16px; }
+.kpi {
+  border-radius:14px; padding:14px 12px 16px;
+  min-height:80px; display:flex; flex-direction:column;
+  justify-content:space-between;
+  cursor:pointer; transition:transform 0.15s;
+}
+.kpi:active { transform:scale(0.95); }
+.kpi-label { font-size:12px; color:var(--fg4); margin-bottom:6px; }
+.kpi-val { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.kpi-tap-hint { font-size:10px; color:var(--fg4); margin-top:3px; }
+
+/* TABS */
+.tabs { display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink:0; padding:6px 14px; border-radius:20px;
+  font-size:13px; font-weight:500;
+  background:var(--bg3); color:var(--fg2);
+  cursor:pointer; border:none; font-family:inherit;
+}
+.tab.active { background:var(--blue); color:#fff; }
+
+/* summary card */
+.summary-card {
+  margin:0 16px 12px;
+  background:var(--bg2);
+  border-radius:14px; padding:14px 16px;
+  box-shadow:var(--shadow);
+}
+.summary-title { font-size:18px; font-weight:700; color:var(--fg); margin-bottom:8px; }
+.summary-text  { font-size:15px; color:var(--fg2); line-height:1.65; }
+
+/* GRID */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.group-wrap { margin:16px 16px 6px; }
+.group-tab {
+  display:inline-flex; align-items:center; justify-content:space-between;
+  border-radius:12px 12px 0 0; padding:8px 14px 10px;
+  width:100%; border-bottom:none;
+}
+.group-body { border-radius:0 0 16px 16px; padding:10px; }
+.group-banner-name { font-size:16px; font-weight:700; color:var(--fg); }
+.group-banner-right { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+.group-banner-arrow { color:var(--fg4); font-size:12px; }
+.group-banner-diff { font-size:15px; font-weight:700; }
+.group-banner-label { font-size:15px; font-weight:700; }
+
+/* CARD */
+.card {
+  border-radius:14px; padding:13px 13px 12px;
+  cursor:pointer;
+  transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+  box-shadow:var(--shadow);
+  will-change:transform;
+}
+.card:active { transform:scale(0.94); box-shadow:var(--shadow-lg); }
+.card.tapped { animation:cardPop 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+@keyframes cardPop {
+  0%   { transform:scale(1);    filter:blur(0px);   opacity:1; }
+  40%  { transform:scale(1.06); filter:blur(1px);   opacity:0.9; }
+  100% { transform:scale(1);    filter:blur(0px);   opacity:1; }
+}
+.card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.card-name { font-size:18px; font-weight:700; color:var(--fg); }
+.card-dept-label { font-size:11px; color:var(--fg4); margin-top:2px; }
+.card-right { text-align:right; }
+.card-may { font-size:18px; font-weight:700; }
+.card-may.may-up  { color:var(--red); }
+.card-may.may-dn  { color:var(--green); }
+.card-may.may-neu { color:var(--fg); }
+.diff-up  { font-size:13px; font-weight:600; color:var(--red);   margin-top:1px; }
+.diff-dn  { font-size:13px; font-weight:600; color:var(--green); margin-top:1px; }
+.diff-neu { font-size:13px; font-weight:600; color:var(--fg4);   margin-top:1px; }
+.card-apr    { font-size:12px; color:var(--blue2); margin-top:1px; }
+.card-reason { font-size:11px; color:var(--fg3);  line-height:1.55; margin-top:6px; }
+.warn-dot { width:7px; height:7px; border-radius:50%; background:var(--orange); display:inline-block; margin-left:4px; vertical-align:middle; }
+
+/* dept card backgrounds — CSS vars, auto dark */
+.bg-lavender { background:var(--dept-lavender); }
+.bg-sage     { background:var(--dept-sage); }
+.bg-sky      { background:var(--dept-sky); }
+.bg-sand     { background:var(--dept-sand); }
+.bg-lilac    { background:var(--dept-lilac); }
+.bg-mint     { background:var(--dept-mint); }
+.bg-stone    { background:var(--dept-stone); }
+.bg-ice      { background:var(--dept-ice); }
+
+/* OVERLAY — person detail sheet */
+.overlay {
+  position:fixed; inset:0; z-index:100;
+  background:var(--overlay-bg);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity 0.25s;
+}
+.overlay.show { opacity:1; pointer-events:all; }
+.sheet {
+  width:100%; max-height:96vh; border-radius:20px 20px 0 0;
+  overflow-y:auto;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:32px;
+}
+.overlay.show .sheet { transform:translateY(0); }
+.sheet-handle { width:36px; height:5px; background:var(--handle); border-radius:3px; margin:12px auto 0; }
+.sheet-top { padding:12px 16px 14px; }
+.sheet-name { font-size:24px; font-weight:700; margin-bottom:10px; color:var(--fg); }
+.sheet-kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:12px 16px 0; }
+.sheet-kpi {
+  border-radius:12px; padding:14px 12px 16px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  min-height:90px;
+}
+.sheet-kpi-label { font-size:11px; color:var(--fg4); margin-bottom:4px; }
+.sheet-kpi-val   { font-size:28px; font-weight:700; letter-spacing:-0.5px; }
+.sheet-kpi-sub   { font-size:13px; font-weight:600; margin-top:3px; }
+
+.reason-sec {
+  background:var(--panel-bg);
+  margin:10px 16px; border-radius:14px; padding:14px 16px;
+}
+.reason-sec-title { font-size:13px; font-weight:600; color:var(--fg4); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em; }
+.reason-text      { font-size:16px; color:var(--fg); line-height:1.65; }
+.pending-box {
+  background:var(--tint-orange); border-radius:10px;
+  padding:8px 12px; font-size:13px; color:var(--orange);
+  line-height:1.6; border-left:3px solid var(--orange); margin-top:8px;
+}
+.chart-sec {
+  background:var(--panel-bg);
+  margin:0 16px 10px; border-radius:14px; padding:14px 16px 16px;
+}
+.chart-title { font-size:12px; font-weight:600; color:var(--fg4); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.04em; }
+
+.numrow { display:flex; align-items:center; padding:9px 0; border-bottom:0.5px solid var(--numrow-sep); }
+.numrow:last-child { border-bottom:none; }
+.numrow-name  { font-size:14px; font-weight:600; color:var(--fg2); width:36px; flex-shrink:0; }
+.numrow-apr   { font-size:15px; font-weight:600; color:var(--blue2); flex:1; text-align:right; }
+.numrow-arrow { font-size:13px; color:var(--fg4); padding:0 8px; flex-shrink:0; }
+.numrow-may   { font-size:15px; font-weight:700; flex:1; text-align:left; }
+.numrow-may.up  { color:var(--red); }
+.numrow-may.dn  { color:var(--green); }
+.numrow-may.neu { color:var(--blue2); }
+.numrow-may.neg { color:var(--red); }
+.numrow-tag { font-size:11px; font-weight:600; padding:2px 6px; border-radius:6px; flex-shrink:0; }
+.numrow-tag.up  { background:var(--tag-up-bg);  color:var(--red); }
+.numrow-tag.dn  { background:var(--tag-dn-bg);  color:var(--green); }
+.numrow-tag.neu { background:var(--tag-neu-bg); color:var(--blue2); }
+.numrow-tag.neg { background:var(--tag-up-bg);  color:var(--red); }
+
+.close-btn {
+  display:block; width:calc(100% - 32px);
+  margin:10px 16px 0; padding:15px; border-radius:14px;
+  background:var(--close-btn); color:#fff;
+  font-size:16px; font-weight:600; font-family:inherit; border:none; cursor:pointer;
+}
+
+.pending-footer {
+  margin:14px 16px 0; background:var(--tint-orange);
+  border-radius:14px; padding:13px 16px;
+  border:0.5px solid rgba(255,149,0,0.35);
+}
+.pending-footer-title { font-size:13px; font-weight:700; color:var(--orange); margin-bottom:6px; }
+.pending-footer-item  { font-size:13px; color:var(--fg3); line-height:1.9; }
+
+/* ── YEAR CALENDAR OVERLAY ── */
+.cal-overlay {
+  position:fixed; inset:0; z-index:200;
+  background:var(--overlay-bg);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity 0.25s;
+}
+.cal-overlay.show { opacity:1; pointer-events:all; }
+.cal-sheet {
+  width:100%; border-radius:24px 24px 0 0;
+  background:var(--sheet-bg);
+  transform:translateY(100%);
+  transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:36px; max-height:80vh; overflow-y:auto;
+}
+.cal-overlay.show .cal-sheet { transform:translateY(0); }
+.cal-handle { width:36px; height:5px; background:var(--handle); border-radius:3px; margin:12px auto 8px; }
+.cal-header { padding:4px 20px 16px; }
+.cal-year    { font-size:28px; font-weight:700; color:var(--fg); }
+.cal-subtitle { font-size:14px; color:var(--fg4); margin-top:2px; }
+.cal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px; }
+.cal-cell {
+  border-radius:16px; padding:14px 12px 16px;
+  display:flex; flex-direction:column;
+  min-height:90px; position:relative; transition:transform 0.15s;
+}
+.cal-cell.has-data { cursor:pointer; }
+.cal-cell.has-data:active { transform:scale(0.94); }
+.cal-cell.empty { background:var(--bg3); opacity:0.5; }
+.cal-cell.active-month { box-shadow:0 0 0 2.5px var(--blue); }
+.cal-month-name { font-size:13px; font-weight:600; margin-bottom:6px; }
+.cal-total { font-size:20px; font-weight:700; letter-spacing:-0.5px; margin-top:auto; }
+.cal-diff  { font-size:11px; font-weight:600; margin-top:3px; }
+.cal-empty-label { font-size:12px; color:var(--fg4); margin-top:auto; }
+.cal-dot { width:6px; height:6px; border-radius:50%; background:var(--blue); position:absolute; top:10px; right:10px; }
+</style>
+</head>
+<body>
+
+<!-- Month nav bar -->
+<div class="month-nav" id="month-nav"></div>
+
+<!-- KPI row -->
+<div class="kpi-row" id="kpi-row"></div>
+
+<!-- Summary card -->
+<div class="summary-card">
+  <div id="summary-title" class="summary-title"></div>
+  <div id="summary-text" class="summary-text"></div>
+</div>
+
+<!-- Filter tabs -->
+<div class="tabs" id="filter-tabs">
+  <button class="tab active" onclick="filterCards('all',this)">全部</button>
+  <button class="tab" onclick="filterCards('THEONE',this)">THEONE</button>
+  <button class="tab" onclick="filterCards('直播',this)">直播</button>
+  <button class="tab" onclick="filterCards('剪辑号',this)">剪辑号</button>
+  <button class="tab" onclick="filterCards('陈先生',this)">陈先生项目</button>
+  <button class="tab" onclick="filterCards('仓库',this)">仓库</button>
+  <button class="tab" onclick="filterCards('售后',this)">售后</button>
+  <button class="tab" onclick="filterCards('up',this)">↑ 上涨</button>
+  <button class="tab" onclick="filterCards('dn',this)">↓ 下降</button>
+  <button class="tab" onclick="filterCards('neu',this)">→ 不变</button>
+</div>
+
+<div id="grid-container"></div>
+<div id="pending-footer-wrap"></div>
+
+<!-- Person detail sheet -->
+<div class="overlay" id="overlay" onclick="closeSheet(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-top">
+      <div class="sheet-name" id="d-name"></div>
+      <div id="d-compare"></div>
+      <div id="d-diff" style="display:none"></div>
+    </div>
+    <div class="reason-sec">
+      <div class="reason-sec-title">变化原因</div>
+      <div class="reason-text" id="d-reason"></div>
+      <div id="d-pending"></div>
+    </div>
+    <div class="chart-sec">
+      <div class="chart-title">工资构成明细对比</div>
+      <div style="display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;"></div>
+        <div style="font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;">上月</div>
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;">→</div>
+        <div style="font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;">本月</div>
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;">变化</div>
+      </div>
+      <div id="d-chart"></div>
+    </div>
+    <button class="close-btn" onclick="closeSheet()">关闭</button>
+  </div>
+</div>
+
+<!-- Year calendar overlay -->
+<div class="cal-overlay" id="cal-overlay" onclick="calOverlayClick(event)">
+  <div class="cal-sheet" id="cal-sheet">
+    <div class="cal-handle"></div>
+    <div class="cal-header">
+      <div class="cal-year">2026</div>
+      <div class="cal-subtitle">点击已有数据的月份查看简报</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <button class="close-btn" style="margin-top:16px;" onclick="closeCalendar()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+
+const peopleApr = [
+  {name:'孔敏怡',dept:'运营',may:5050,apr:0,type:'neu',reason:'底薪+补贴+全勤，无加班提成。',bars:[{n:'底薪',may:4900,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'伍华彩',dept:'美工',may:6910,apr:0,type:'neu',reason:'加班¥260（按1天折算）。',bars:[{n:'底薪',may:6500,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:260,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'赵姗姗',dept:'美工',may:7118,apr:0,type:'neu',reason:'加班¥268（按1天折算）。',bars:[{n:'底薪',may:6700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:268,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'赵佳琪',dept:'客服',may:5850,apr:0,type:'neu',reason:'产假期间，按固定标准发放。',bars:[{n:'底薪',may:5700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'莫翠玲',dept:'阳江客服',may:8200,apr:0,type:'neu',reason:'居家办公，固定薪资，无全勤。',bars:[{n:'底薪',may:8200,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'莫碧君',dept:'阳江客服',may:8200,apr:0,type:'neu',reason:'居家办公，固定薪资，无全勤。',bars:[{n:'底薪',may:8200,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'陈嘉仪',dept:'阳江客服',may:7422,apr:0,type:'neu',reason:'加班¥402（约1.5天），各项正常。',bars:[{n:'底薪',may:6700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:402,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'郭锋原',dept:'直播办公室',may:12790,apr:0,type:'neu',reason:'固定加班¥2,000已计入；GMV提成¥840已发。',bars:[{n:'底薪',may:9800,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:2000,apr:0},{n:'提成',may:840,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'黄东亮',dept:'直播办公室',may:7754,apr:0,type:'neu',reason:'GMV提成¥404已计入，本月无加班费。',bars:[{n:'底薪',may:7200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:404,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'伍尚康',dept:'直播办公室',may:9350,apr:0,type:'neu',reason:'底薪+补贴+全勤，本月无加班。',bars:[{n:'底薪',may:9200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'王靖允',dept:'直播办公室',may:5648,apr:0,type:'neu',reason:'扣请假¥620，有提成¥218，全勤未达标。',bars:[{n:'底薪',may:6200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:218,apr:0},{n:'请假扣',may:-620,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'杨欣',dept:'直播办公室',may:8121,apr:0,type:'neu',reason:'加班费¥674+提成¥127，本月收入较高。',bars:[{n:'底薪',may:7000,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:674,apr:0},{n:'提成',may:127,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'唐恺',dept:'直播办公室',may:5055,apr:0,type:'neu',reason:'扣请假¥347，有提成¥351，全勤未达标。',bars:[{n:'底薪',may:5200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:351,apr:0},{n:'请假扣',may:-347,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'胡可财',dept:'直播办公室',may:4147,apr:0,type:'neu',reason:'有提成¥127，各项正常。',bars:[{n:'底薪',may:3700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:127,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'许朝阳',dept:'直播办公室',may:6144,apr:0,type:'neu',reason:'加班费¥500+提成¥294，本月表现好。',bars:[{n:'底薪',may:5200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:500,apr:0},{n:'提成',may:294,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'张妍柔',dept:'直播办公室',may:7520,apr:0,type:'neu',reason:'底薪+补贴+全勤，无加班提成。',bars:[{n:'底薪',may:7200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'林汝荣',dept:'剪辑号',may:9350,apr:0,type:'neu',reason:'固定加班费¥3,000，各项正常。',bars:[{n:'底薪',may:6200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:3000,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'项柯桥',dept:'剪辑号',may:5558,apr:0,type:'neu',reason:'加班费¥208（约10.4小时）。',bars:[{n:'底薪',may:5200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:208,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'黄龙光',dept:'剪辑号',may:3950,apr:0,type:'neu',reason:'按固定标准发放。',bars:[{n:'底薪',may:4600,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'谢克卓',dept:'陈先生项目',may:5558,apr:0,type:'neu',reason:'加班费¥208（约10.4小时）。',bars:[{n:'底薪',may:5200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:208,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'林健欢',dept:'陈先生项目',may:7350,apr:0,type:'neu',reason:'底薪+补贴+全勤，各项正常。',bars:[{n:'底薪',may:7200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'陈奕友',dept:'陈先生项目',may:5350,apr:0,type:'neu',reason:'固定工资¥5,350。',bars:[{n:'底薪',may:6000,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'梁梦娜',dept:'陈先生项目',may:7000,apr:0,type:'neu',reason:'固定工资¥7,000（含一切）。',bars:[{n:'固定总额',may:7000,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'肖煌',dept:'仓库',may:7690,apr:0,type:'neu',reason:'固定加班¥1,000已计入；罚款¥10。',bars:[{n:'底薪',may:7200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:1000,apr:0},{n:'提成',may:0,apr:0},{n:'罚款',may:-10,apr:0},{n:'社保',may:-1300,apr:0}]},
+  {name:'梁想贤',dept:'仓库',may:6128,apr:0,type:'neu',reason:'绩效提成¥1,670，加班¥168；罚款¥10。',bars:[{n:'底薪',may:4200,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:168,apr:0},{n:'提成',may:1670,apr:0},{n:'罚款',may:-10,apr:0},{n:'社保',may:-700,apr:0}]},
+  {name:'梁苑斌',dept:'仓库',may:7212,apr:0,type:'neu',reason:'绩效提成¥4,262，加班¥160；罚款¥10。',bars:[{n:'底薪',may:2700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:160,apr:0},{n:'提成',may:4262,apr:0},{n:'罚款',may:-10,apr:0},{n:'社保',may:-700,apr:0}]},
+  {name:'何均伟',dept:'仓库',may:7137,apr:0,type:'neu',reason:'绩效提成¥3,817，加班¥300。',bars:[{n:'底薪',may:2700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:300,apr:0},{n:'提成',may:3817,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'黄扬明',dept:'仓库',may:5979,apr:0,type:'neu',reason:'绩效提成¥3,179，底薪按出勤23.5天折算；罚款¥10。',bars:[{n:'底薪',may:3290,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:3179,apr:0},{n:'罚款',may:-10,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'林庆霞',dept:'仓库',may:5308,apr:0,type:'neu',reason:'绩效提成¥2,158，加班¥200，底薪按出勤22.5天折算；罚款¥20。',bars:[{n:'底薪',may:3150,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:200,apr:0},{n:'提成',may:2158,apr:0},{n:'罚款',may:-20,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'金丽桃',dept:'仓库',may:5898,apr:0,type:'neu',reason:'绩效提成¥2,948，加班¥360，底薪按出勤22天折算；罚款¥10。',bars:[{n:'底薪',may:3080,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:360,apr:0},{n:'提成',may:2948,apr:0},{n:'罚款',may:-10,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'庞金茹',dept:'仓库',may:5405,apr:0,type:'neu',reason:'绩效提成¥2,395，加班¥360，底薪按出勤22.5天折算；罚款¥20。',bars:[{n:'底薪',may:3150,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:360,apr:0},{n:'提成',may:2395,apr:0},{n:'罚款',may:-20,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'陈招汉',dept:'仓库',may:6565,apr:0,type:'neu',reason:'绩效提成¥3,745，加班¥300，底薪按出勤23天折算。',bars:[{n:'底薪',may:3220,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:300,apr:0},{n:'提成',may:3745,apr:0},{n:'社保',may:-700,apr:0}]},
+  {name:'庞智鹏',dept:'仓库',may:4586,apr:0,type:'neu',reason:'绩效提成¥1,886，加班¥100，底薪按出勤22天折算。',bars:[{n:'底薪',may:3080,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:100,apr:0},{n:'提成',may:1886,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'董金源',dept:'仓库',may:4879,apr:0,type:'neu',reason:'绩效提成¥2,939，加班¥40，底薪按出勤17天折算。',bars:[{n:'底薪',may:2380,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:40,apr:0},{n:'提成',may:2939,apr:0},{n:'社保',may:-480,apr:0}]},
+  {name:'莫智雄',dept:'仓库',may:5850,apr:0,type:'neu',reason:'底薪+补贴+全勤，本月无加班提成。',bars:[{n:'底薪',may:5700,apr:0},{n:'补贴',may:500,apr:0},{n:'全勤',may:300,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'梁启凡',dept:'仓库',may:5350,apr:0,type:'neu',reason:'固定工资¥5,350。',bars:[{n:'底薪',may:6000,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:0}]},
+  {name:'梁丽云',dept:'售后',may:5210,apr:0,type:'neu',reason:'绩效提成¥2,086，加班¥40。',bars:[{n:'底薪',may:3784,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:40,apr:0},{n:'提成',may:2086,apr:0},{n:'社保',may:-700,apr:0}]},
+  {name:'胡海云',dept:'售后',may:4727,apr:0,type:'neu',reason:'绩效提成¥1,787；底薪按出勤折算。',bars:[{n:'底薪',may:2940,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:1787,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'陈仲竹',dept:'售后',may:5721,apr:0,type:'neu',reason:'绩效提成¥2,521，加班¥120（6小时）。',bars:[{n:'底薪',may:3080,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:120,apr:0},{n:'提成',may:2521,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'吴美',dept:'售后',may:5147,apr:0,type:'neu',reason:'绩效提成¥1,687，加班¥110，社保补贴+200。',bars:[{n:'底薪',may:3150,apr:0},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:110,apr:0},{n:'提成',may:1687,apr:0},{n:'其他',may:200,apr:0},{n:'社保',may:0,apr:0}]},
+];
+
+const peopleMay = [
+  {name:'孔敏怡',dept:'运营',may:5050,apr:5050,type:'neu',reason:'底薪+补贴+全勤，与上月完全一致。',bars:[{n:'底薪',may:4900,apr:4900},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'伍华彩',dept:'美工',may:6700,apr:6910,type:'dn',reason:'上月加班按1天折算¥260，本月改按实际小时，2.5小时仅¥50，差额¥210。',bars:[{n:'底薪',may:6500,apr:6500},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:50,apr:260},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'赵姗姗',dept:'美工',may:6970,apr:7118,type:'dn',reason:'上月加班按1天折算¥268，本月改按小时，6小时计¥120，差额¥148。',bars:[{n:'底薪',may:6700,apr:6700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:120,apr:268},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'赵佳琪',dept:'客服',may:5850,apr:5850,type:'neu',reason:'产假期间，按固定标准发放。',bars:[{n:'底薪',may:5700,apr:5700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'莫翠玲',dept:'阳江客服',may:8200,apr:8200,type:'neu',reason:'居家办公，固定薪资，无全勤奖。',bars:[{n:'底薪',may:8200,apr:8200},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'莫碧君',dept:'阳江客服',may:8200,apr:8200,type:'neu',reason:'居家办公，固定薪资，无全勤奖。',bars:[{n:'底薪',may:8200,apr:8200},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'陈嘉仪',dept:'阳江客服',may:7020,apr:7422,type:'dn',reason:'上月有1.5天加班费¥402，本月加班仅0.5小时未计入，差额¥402。',bars:[{n:'底薪',may:6700,apr:6700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:402},{n:'提成',may:0,apr:0},{n:'社保',may:-480,apr:-480}]},
+  {name:'郭锋原',dept:'直播办公室',may:11950,apr:12790,type:'warn',reason:'GMV提成待确认暂未计入，固定加班费¥2,000已计入；上月有提成¥840。',pending:'⚠ GMV提成确认后补入，补入后总额将高于上月。',bars:[{n:'底薪',may:9800,apr:9800},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:2000,apr:2000},{n:'提成',may:0,apr:840},{n:'社保',may:-650,apr:-650}]},
+  {name:'黄东亮',dept:'直播办公室',may:7470,apr:7754,type:'warn',reason:'上月有提成¥404，本月GMV提成待补；加班费¥120已计入。',pending:'⚠ GMV提成确认后补入。',bars:[{n:'底薪',may:7200,apr:7200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:120,apr:0},{n:'提成',may:0,apr:404},{n:'社保',may:-650,apr:-650}]},
+  {name:'伍尚康',dept:'直播办公室',may:9350,apr:9350,type:'neu',reason:'底薪+补贴+全勤，与上月一致，本月未排班。',bars:[{n:'底薪',may:9200,apr:9200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'王靖允',dept:'直播办公室',may:6750,apr:5648,type:'up',reason:'上月扣¥620请假，本月不扣；本月加班20小时，加班费¥400，合计涨¥1,102。',bars:[{n:'底薪',may:6200,apr:6200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:400,apr:0},{n:'提成',may:0,apr:218},{n:'社保',may:-650,apr:-650}]},
+  {name:'杨欣',dept:'直播办公室',may:7380,apr:8121,type:'warn',reason:'上月有提成¥127+加班¥674，本月加班费¥60，GMV提成待补。',pending:'⚠ GMV提成确认后补入。',bars:[{n:'底薪',may:7000,apr:7000},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:60,apr:674},{n:'提成',may:0,apr:127},{n:'社保',may:-480,apr:-480}]},
+  {name:'唐恺',dept:'直播办公室',may:5380,apr:5055,type:'up',reason:'上月扣¥347请假，本月不扣；加班费¥30。',bars:[{n:'底薪',may:5200,apr:5200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:0},{n:'加班',may:30,apr:0},{n:'提成',may:0,apr:351},{n:'社保',may:-650,apr:-650}]},
+  {name:'胡可财',dept:'直播办公室',may:4120,apr:4147,type:'dn',reason:'与上月基本持平，上月有少量提成¥127，本月未计，差额¥27。',bars:[{n:'底薪',may:3700,apr:3700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:100,apr:0},{n:'提成',may:0,apr:127},{n:'社保',may:-480,apr:-480}]},
+  {name:'许朝阳',dept:'直播办公室',may:5610,apr:6144,type:'warn',reason:'上月有提成¥294+加班¥500，本月加班费¥260，GMV提成待补。',pending:'⚠ GMV提成确认后补入。',bars:[{n:'底薪',may:5200,apr:5200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:260,apr:500},{n:'提成',may:0,apr:294},{n:'社保',may:-650,apr:-650}]},
+  {name:'张妍柔',dept:'直播办公室',may:7580,apr:7520,type:'up',reason:'本月加班3小时，加班费¥60，微涨。',bars:[{n:'底薪',may:7200,apr:7200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:60,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-480,apr:-480}]},
+  {name:'林汝荣',dept:'剪辑号',may:9350,apr:9350,type:'neu',reason:'固定加班费¥3,000，与上月完全一致。',bars:[{n:'底薪',may:6200,apr:6200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:3000,apr:3000},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'项柯桥',dept:'剪辑号',may:6440,apr:5558,type:'up',reason:'本月飞书加班54.5小时，按20元/小时计加班费¥1,090，上月无加班费。',bars:[{n:'底薪',may:5200,apr:5200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:1090,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'黄龙光',dept:'剪辑号',may:3950,apr:3950,type:'neu',reason:'按上月标准固定发放。',bars:[{n:'底薪',may:4600,apr:4600},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'谢克卓',dept:'陈先生项目',may:6400,apr:5558,type:'up',reason:'本月加班52.5小时，加班费¥1,050，上月仅加班费¥208。',bars:[{n:'底薪',may:5200,apr:5200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:1050,apr:208},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'林健欢',dept:'陈先生项目',may:7880,apr:7350,type:'up',reason:'本月加班26.5小时，加班费¥530，上月无加班费。',bars:[{n:'底薪',may:7200,apr:7200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:530,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'陈奕友',dept:'陈先生项目',may:5350,apr:5350,type:'neu',reason:'固定工资，与上月一致。',bars:[{n:'底薪',may:6000,apr:6000},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'梁梦娜',dept:'陈先生项目',may:7000,apr:6000,type:'up',reason:'原"娜娜"，本月起固定¥7,000，上月为底薪+全勤等合计¥6,000。',bars:[{n:'固定总额',may:7000,apr:6000},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
+  {name:'肖煌',dept:'仓库',may:7700,apr:7690,type:'warn',reason:'固定加班费¥1,000已计入；仓库绩效提成暂未补入，待主管确认。',pending:'⚠ 仓库绩效提成待确认后补入。',bars:[{n:'底薪',may:7200,apr:7200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:1000,apr:1000},{n:'提成',may:0,apr:0},{n:'社保',may:-1300,apr:-1300}]},
+  {name:'梁想贤',dept:'仓库',may:6190,apr:6128,type:'up',reason:'绩效提成¥1,670，加班费¥220，与上月基本持平。',bars:[{n:'底薪',may:4200,apr:4200},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:220,apr:168},{n:'提成',may:1670,apr:1670},{n:'社保',may:-700,apr:-700}]},
+  {name:'梁苑斌',dept:'仓库',may:7252,apr:7212,type:'up',reason:'绩效提成¥4,262，加班费¥190，与上月基本持平。',bars:[{n:'底薪',may:2700,apr:2700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:190,apr:160},{n:'提成',may:4262,apr:4262},{n:'社保',may:-700,apr:-700}]},
+  {name:'何均伟',dept:'仓库',may:7087,apr:7137,type:'dn',reason:'绩效提成¥3,817与上月一致；上月加班¥300，本月加班¥250，微降¥50。',bars:[{n:'底薪',may:2700,apr:2700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:250,apr:300},{n:'提成',may:3817,apr:3817},{n:'社保',may:-480,apr:-480}]},
+  {name:'黄扬明',dept:'仓库',may:6419,apr:5979,type:'up',reason:'本月底薪按满月计算，上月按出勤23.5天折算偏低；加班费¥130。',bars:[{n:'底薪',may:3290,apr:3080},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:130,apr:0},{n:'提成',may:3179,apr:3179},{n:'社保',may:-480,apr:-480}]},
+  {name:'林庆霞',dept:'仓库',may:5308,apr:5008,type:'up',reason:'绩效提成¥2,158，加班费¥180；上月底薪按出勤天数折算偏低。',bars:[{n:'底薪',may:3150,apr:3150},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:180,apr:200},{n:'提成',may:2158,apr:2158},{n:'社保',may:-480,apr:-480}]},
+  {name:'金丽桃',dept:'仓库',may:6018,apr:5898,type:'up',reason:'绩效提成¥2,948，加班费¥170；上月底薪按出勤22天折算偏低。',bars:[{n:'底薪',may:3080,apr:3080},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:170,apr:360},{n:'提成',may:2948,apr:2948},{n:'社保',may:-480,apr:-480}]},
+  {name:'庞金茹',dept:'仓库',may:5615,apr:5405,type:'up',reason:'绩效提成¥2,395，加班费¥250；上月底薪按出勤天数折算偏低。',bars:[{n:'底薪',may:3150,apr:3150},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:250,apr:360},{n:'提成',may:2395,apr:2395},{n:'社保',may:-480,apr:-480}]},
+  {name:'陈招汉',dept:'仓库',may:6615,apr:6565,type:'up',reason:'绩效提成¥3,745，本月加班¥50，与上月基本持平。',bars:[{n:'底薪',may:3220,apr:3220},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:50,apr:300},{n:'提成',may:3745,apr:3745},{n:'社保',may:-700,apr:-700}]},
+  {name:'庞智鹏',dept:'仓库',may:4956,apr:4586,type:'up',reason:'绩效提成¥1,886，加班费¥170；上月底薪按出勤22天折算偏低。',bars:[{n:'底薪',may:3080,apr:3080},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:170,apr:100},{n:'提成',may:1886,apr:1886},{n:'社保',may:-480,apr:-480}]},
+  {name:'董金源',dept:'仓库',may:5199,apr:4879,type:'up',reason:'绩效提成¥2,939，加班费¥60；上月底薪按出勤17天折算偏低，本月满月计算。',bars:[{n:'底薪',may:2380,apr:2380},{n:'补贴',may:0,apr:0},{n:'全勤',may:300,apr:300},{n:'加班',may:60,apr:40},{n:'提成',may:2939,apr:2939},{n:'社保',may:-480,apr:-480}]},
+  {name:'莫智雄',dept:'仓库',may:5870,apr:5850,type:'warn',reason:'底薪+加班¥20已计入；仓库绩效提成暂未计入。',pending:'⚠ 仓库绩效提成待确认后补入。',bars:[{n:'底薪',may:5700,apr:5700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:20,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'梁启凡',dept:'仓库',may:5350,apr:5350,type:'neu',reason:'固定工资，与上月一致。',bars:[{n:'底薪',may:6000,apr:6000},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
+  {name:'梁丽云',dept:'售后',may:5600,apr:5210,type:'up',reason:'本月加班21.5小时，加班费¥430；绩效提成¥2,086。',bars:[{n:'底薪',may:3784,apr:3784},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:430,apr:40},{n:'提成',may:2086,apr:2086},{n:'社保',may:-700,apr:-700}]},
+  {name:'胡海云',dept:'售后',may:5297,apr:4727,type:'up',reason:'绩效提成¥1,787，加班0.5小时计¥10；上月底薪按出勤折算偏低。',bars:[{n:'底薪',may:3500,apr:2940},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:10,apr:0},{n:'提成',may:1787,apr:1787},{n:'社保',may:0,apr:0}]},
+  {name:'陈仲竹',dept:'售后',may:7281,apr:5721,type:'up',reason:'加班63小时加班费¥1,260 + 绩效提成¥2,521，涨幅较大，主管确认中。',pending:'⚠ 加班63小时涨幅较大，需主管确认是否属实。',bars:[{n:'底薪',may:3500,apr:3500},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:1260,apr:120},{n:'提成',may:2521,apr:2521},{n:'社保',may:0,apr:0}]},
+  {name:'吴美',dept:'售后',may:5907,apr:5147,type:'up',reason:'本月加班36小时，加班费¥720；绩效提成¥1,687。',bars:[{n:'底薪',may:3500,apr:3500},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:720,apr:0},{n:'提成',may:1687,apr:1687},{n:'社保',may:0,apr:0}]},
+];
+
+// Monthly metadata — add new months here as data becomes available
+const monthMeta = {
+  4: {
+    people: peopleApr,
+    total: 257887,
+    prevTotal: null,   // no March data
+    label: '4月',
+    summary: '4月实发总额 <span style="color:var(--green);font-weight:600;">¥257,887</span>，共40人。直播组多人有GMV提成及加班费计入，仓库绩效正常发放。王靖允/唐恺有请假扣款；郭锋原固定加班¥2,000+提成¥840。',
+    pendingTitle: '📌 4月备注',
+    pendingBody: '郭锋原 — 固定加班¥2,000 + GMV提成¥840 已计入<br>王靖允 / 唐恺 — 有请假扣款<br>仓库绩效已计入各人4月提成',
+  },
+  5: {
+    people: peopleMay,
+    total: 263614,
+    prevTotal: 257887,
+    label: '5月',
+    summary: '5月总工资较4月增加 <span style="color:var(--red);font-weight:600;">¥5,727（+2.2%）</span>，主要来自仓库及直播组加班费普遍计入。郭锋原/杨欣/许朝阳/黄东亮 GMV提成待补，补完后总额将进一步上涨。',
+    pendingTitle: '⚠ 以下人员补充后总额将继续上调',
+    pendingBody: '郭锋原 / 杨欣 / 许朝阳 / 黄东亮 — GMV提成待确认<br>肖煌 / 莫智雄 — 仓库绩效待确认<br>陈仲竹 — 加班63小时待主管确认',
+  },
+};
+
+const AVAILABLE_MONTHS = [4, 5];  // ← 每月追加这里
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentMonth = 5;   // default to latest
+let currentFilter = 'all';
+
+// ═══════════════════════════════════════════
+// STATIC MAPS
+// ═══════════════════════════════════════════
+function fmt(n){ return Math.abs(n).toLocaleString('zh-CN'); }
+
+const deptBg = {
+  '运营':'bg-lavender','美工':'bg-sage','客服':'bg-sky','阳江客服':'bg-sand',
+  '直播办公室':'bg-sky','剪辑号':'bg-lilac','陈先生项目':'bg-mint','仓库':'bg-stone','售后':'bg-ice',
+};
+const deptGroup = {
+  '运营':'THEONE','美工':'THEONE','客服':'THEONE','阳江客服':'THEONE',
+  '直播办公室':'直播','剪辑号':'剪辑号','陈先生项目':'陈先生','仓库':'仓库','售后':'售后',
+};
+const groupLabels = {
+  'THEONE':'THEONE — 运营/美工/客服/阳江客服','直播':'直播办公室',
+  '剪辑号':'剪辑号','陈先生':'陈先生项目','仓库':'仓库','售后':'售后',
+};
+const groupOrder = ['THEONE','直播','剪辑号','陈先生','仓库','售后'];
+
+const deptOrder = ['孔敏怡','伍华彩','赵姗姗','赵佳琪','莫翠玲','莫碧君','陈嘉仪',
+  '郭锋原','黄东亮','伍尚康','王靖允','杨欣','唐恺','胡可财','许朝阳','张妍柔',
+  '林汝荣','项柯桥','黄龙光','谢克卓','林健欢','陈奕友','梁梦娜',
+  '肖煌','梁想贤','梁苑斌','何均伟','黄扬明','林庆霞','金丽桃','庞金茹','陈招汉','庞智鹏','董金源','莫智雄','梁启凡',
+  '梁丽云','胡海云','陈仲竹','吴美'];
+
+const bannerBgMap = {
+  'bg-lavender':'var(--banner-lavender)','bg-sage':'var(--banner-sage)','bg-sky':'var(--banner-sky)','bg-sand':'var(--banner-sand)',
+  'bg-lilac':'var(--banner-lilac)','bg-mint':'var(--banner-mint)','bg-stone':'var(--banner-stone)','bg-ice':'var(--banner-ice)'
+};
+const bannerBorderMap = {
+  'bg-lavender':'var(--border-lavender)','bg-sage':'var(--border-sage)','bg-sky':'var(--border-sky)','bg-sand':'var(--border-sand)',
+  'bg-lilac':'var(--border-lilac)','bg-mint':'var(--border-mint)','bg-stone':'var(--border-stone)','bg-ice':'var(--border-ice)'
+};
+
+// ═══════════════════════════════════════════
+// MONTH SWITCHING
+// ═══════════════════════════════════════════
+function switchMonth(m) {
+  currentMonth = m;
+  currentFilter = 'all';
+  renderMonthNav();
+  renderKPI();
+  renderSummary();
+  renderCards('all');
+  // reset filter tabs
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', i===0);
+  });
+}
+
+function renderMonthNav() {
+  const nav = document.getElementById('month-nav');
+  nav.innerHTML = '';
+  const calBtn = document.createElement('button');
+  calBtn.className = 'month-chip';
+  calBtn.style.cssText = 'background:var(--fg);color:var(--bg);padding:7px 14px;font-size:16px;';
+  calBtn.textContent = '📅';
+  calBtn.onclick = openCalendar;
+  nav.appendChild(calBtn);
+
+  AVAILABLE_MONTHS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'month-chip' + (m === currentMonth ? ' active' : '');
+    btn.textContent = m + '月';
+    btn.onclick = () => switchMonth(m);
+    nav.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════
+// KPI ROW
+// ═══════════════════════════════════════════
+function renderKPI() {
+  const meta = monthMeta[currentMonth];
+  const prev = meta.prevTotal;
+  const curr = meta.total;
+  const diff = prev != null ? curr - prev : null;
+  const pct  = prev != null ? ((diff/prev)*100).toFixed(1) : null;
+  const isUp = diff != null && diff > 0;
+  const isDn = diff != null && diff < 0;
+  const accentColor = isUp ? 'var(--red)' : isDn ? 'var(--green)' : 'var(--blue2)';
+  const accentBg    = isUp ? 'var(--tint-red)' : isDn ? 'var(--tint-green)' : 'var(--tint-blue)';
+
+  let kpiHtml = '';
+  // Cell 1: prev month total (clickable)
+  if (prev != null) {
+    kpiHtml += `
+    <div class="kpi" style="background:var(--kpi-prev-bg)" onclick="openCalendar()">
+      <div class="kpi-label" style="color:var(--kpi-prev-fg)">上月总额</div>
+      <div class="kpi-val" style="color:var(--kpi-prev-fg)">¥${prev.toLocaleString('zh-CN')}</div>
+      <div class="kpi-tap-hint">查看全年 ›</div>
+    </div>`;
+  } else {
+    kpiHtml += `
+    <div class="kpi" style="background:var(--bg3);opacity:0.6" onclick="openCalendar()">
+      <div class="kpi-label">上月总额</div>
+      <div class="kpi-val" style="color:var(--fg4)">—</div>
+      <div class="kpi-tap-hint">查看全年 ›</div>
+    </div>`;
+  }
+  // Cell 2: this month total (clickable)
+  kpiHtml += `
+    <div class="kpi" style="background:${accentBg}" onclick="openCalendar()">
+      <div class="kpi-label" style="color:${accentColor}">本月总额</div>
+      <div class="kpi-val" style="color:${accentColor}">¥${curr.toLocaleString('zh-CN')}</div>
+      <div class="kpi-tap-hint" style="color:${accentColor};">查看全年 ›</div>
+    </div>`;
+  // Cell 3: MoM change or headcount
+  if (diff != null) {
+    const sign = diff>0?'+':diff<0?'':' ';
+    kpiHtml += `
+    <div class="kpi" style="background:${accentBg}">
+      <div class="kpi-label" style="color:${accentColor}">环比增幅</div>
+      <div style="font-size:13px;color:${accentColor};font-weight:600;margin-bottom:2px">${diff>=0?'+':''}¥${Math.abs(diff).toLocaleString('zh-CN')}</div>
+      <div class="kpi-val" style="color:${accentColor}">${diff>=0?'+':''}${pct}%</div>
+    </div>`;
+  } else {
+    kpiHtml += `
+    <div class="kpi" style="background:#e8f2fb">
+      <div class="kpi-label" style="color:#5b9fd6">人员数量</div>
+      <div class="kpi-val" style="color:#5b9fd6">${meta.people.length}人</div>
+    </div>`;
+  }
+  document.getElementById('kpi-row').innerHTML = kpiHtml;
+}
+
+// ═══════════════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════════════
+function renderSummary() {
+  const meta = monthMeta[currentMonth];
+  document.getElementById('summary-title').textContent = meta.label + '概况';
+  document.getElementById('summary-text').innerHTML = meta.summary;
+  // pending footer
+  const fw = document.getElementById('pending-footer-wrap');
+  fw.innerHTML = meta.pendingBody ? `
+    <div class="pending-footer">
+      <div class="pending-footer-title">${meta.pendingTitle}</div>
+      <div class="pending-footer-item">${meta.pendingBody}</div>
+    </div>` : '';
+}
+
+// ═══════════════════════════════════════════
+// CARDS
+// ═══════════════════════════════════════════
+function renderCards(filter) {
+  currentFilter = filter;
+  const people = monthMeta[currentMonth].people;
+  const container = document.getElementById('grid-container');
+  container.innerHTML = '';
+  const typeFilters = ['up','dn','neu','warn'];
+  const isTypeFilter = typeFilters.includes(filter);
+  let list = [...people].sort((a,b)=>deptOrder.indexOf(a.name)-deptOrder.indexOf(b.name));
+  if(isTypeFilter){
+    list = list.filter(p=>p.type===filter);
+    const wrap = document.createElement('div');
+    wrap.style.padding = '0 16px';
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    list.forEach((p,i) => grid.appendChild(makeCard(p,i,list)));
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
+    return;
+  }
+  const groups = filter === 'all' ? groupOrder : [filter];
+  groups.forEach(grp => {
+    const grpList = list.filter(p=>deptGroup[p.dept]===grp);
+    if(!grpList.length) return;
+    const grpMay = grpList.reduce((s,p)=>s+p.may,0);
+    const grpApr = grpList.reduce((s,p)=>s+p.apr,0);
+    const hasGrpApr = grpApr > 0;
+    const grpDiff = hasGrpApr ? grpMay - grpApr : null;
+    const grpPct = hasGrpApr && grpApr>0 ? ((grpDiff/grpApr)*100).toFixed(1) : null;
+    const grpBg = deptBg[grpList[0]?.dept] || '';
+    const bannerBg = bannerBgMap[grpBg] || 'var(--bg3)';
+    const bannerBorder = bannerBorderMap[grpBg] || '#c7c7cc';
+    const diffColor = grpDiff==null ? 'var(--blue2)' : grpDiff>0?'var(--red)':grpDiff<0?'var(--green)':'var(--blue2)';
+    const aprColor = 'var(--blue2)';
+    const wrap = document.createElement('div');
+    wrap.className = 'group-wrap';
+    const hdr = document.createElement('div');
+    hdr.className = 'group-tab';
+    hdr.style.cssText = `background:${bannerBg};border-left:1px solid ${bannerBorder};border-right:1px solid ${bannerBorder};border-top:1px solid ${bannerBorder};`;
+    const aprTxt = hasGrpApr ? `<span style="color:${aprColor}"><span class="group-banner-label">上月 </span>¥${grpApr.toLocaleString('zh-CN')}</span><span class="group-banner-arrow" style="margin:0 4px">→</span>` : '';
+    const pctTxt = hasGrpApr && grpPct!=null ? `<span class="group-banner-diff" style="color:${diffColor}">(${grpDiff>=0?'+':''}${grpPct}%)</span>` : '';
+    hdr.innerHTML = `
+      <div class="group-banner-name">${groupLabels[grp]||grp}</div>
+      <div class="group-banner-right">
+        ${aprTxt}
+        <span style="color:${diffColor}"><span class="group-banner-label">本月 </span>¥${grpMay.toLocaleString('zh-CN')}</span>
+        ${pctTxt}
+      </div>`;
+    const body = document.createElement('div');
+    body.className = 'group-body';
+    body.style.cssText = `background:${bannerBg};border-left:1px solid ${bannerBorder};border-right:1px solid ${bannerBorder};border-bottom:1px solid ${bannerBorder};`;
+    const sep = document.createElement('div');
+    sep.style.cssText = `height:1px;background:${bannerBorder};margin-bottom:10px;`;
+    body.appendChild(sep);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grpList.forEach((p,i) => grid.appendChild(makeCard(p,i,grpList)));
+    body.appendChild(grid);
+    wrap.appendChild(hdr);
+    wrap.appendChild(body);
+    container.appendChild(wrap);
+  });
+}
+
+function makeCard(p,i,list){
+  const hasApr = p.apr > 0;
+  const diff = hasApr ? p.may - p.apr : null;
+  const sign = diff!=null ? (diff>0?'+':diff<0?'-':'') : '';
+  const diffClass = diff==null ? 'diff-neu' : diff>0?'diff-up':diff<0?'diff-dn':'diff-neu';
+  const diffDisplay = diff==null ? '—' : diff===0 ? '—' : `${sign}${fmt(diff)}`;
+  const mayClass = diff==null ? 'may-neu' : diff>0?'may-up':diff<0?'may-dn':'may-neu';
+  const warnDot = p.type==='warn'?'<span class="warn-dot"></span>':'';
+  const bgClass = deptBg[p.dept]||'';
+  const aprLine = hasApr ? `<div class="card-apr">上月 ¥${fmt(p.apr)}</div>` : '';
+  const card = document.createElement('div');
+  card.className = `card ${bgClass}`;
+  card.innerHTML = `
+    <div class="card-top">
+      <div>
+        <div class="card-name">${p.name}${warnDot}</div>
+        <div class="card-dept-label">${p.dept}</div>
+      </div>
+      <div class="card-right">
+        <div class="card-may ${mayClass}">¥${fmt(p.may)}</div>
+        <div class="${diffClass}">${diffDisplay}</div>
+        ${aprLine}
+      </div>
+    </div>
+    <div class="card-reason">${p.reason}</div>`;
+  card.addEventListener('click',()=>{
+    card.classList.add('tapped');
+    setTimeout(()=>card.classList.remove('tapped'),320);
+    setTimeout(()=>openSheet(i,list),80);
+  });
+  return card;
+}
+
+function filterCards(f,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderCards(f);
+}
+
+// ═══════════════════════════════════════════
+// PERSON DETAIL SHEET
+// ═══════════════════════════════════════════
+function openSheet(idx,list){
+  const p = list[idx];
+  const hasApr = p.apr > 0;
+  const diff = hasApr ? p.may - p.apr : null;
+  const bgClass = deptBg[p.dept]||'';
+  const sheet = document.getElementById('sheet');
+  sheet.className = `sheet ${bgClass}`;
+  document.getElementById('d-name').textContent = p.name;
+
+  // When no prev data: this-month cell is neutral blue, no tint on prev cell
+  const mayBg    = diff==null ? 'var(--tint-blue)' : diff>0?'var(--tint-red)':diff<0?'var(--tint-green)':'var(--tint-blue)';
+  const mayColor = diff==null ? 'var(--blue2)'     : diff>0?'var(--red)':diff<0?'var(--green)':'var(--blue2)';
+  const pctVal   = hasApr ? ((diff/p.apr)*100).toFixed(1) : null;
+  const aprDisplay = hasApr ? `¥${fmt(p.apr)}` : '—';
+
+  document.getElementById('d-compare').innerHTML = `
+    <div class="sheet-kpi-row">
+      <div class="sheet-kpi" style="background:var(--kpi-prev-bg)">
+        <div class="sheet-kpi-label" style="color:var(--kpi-prev-fg)">上月实发</div>
+        <div class="sheet-kpi-val" style="color:var(--kpi-prev-fg)">${aprDisplay}</div>
+      </div>
+      <div class="sheet-kpi" style="background:${mayBg}">
+        <div class="sheet-kpi-label" style="color:${mayColor}">本月实发</div>
+        <div class="sheet-kpi-val" style="color:${mayColor}">¥${fmt(p.may)}</div>
+      </div>
+      <div class="sheet-kpi" style="background:var(--bg3)">
+        <div class="sheet-kpi-label" style="color:var(--fg4)">环比</div>
+        <div class="sheet-kpi-sub" style="color:var(--fg4)">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
+        <div class="sheet-kpi-val" style="color:var(--fg4)">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('d-diff').style.display='none';
+  document.getElementById('d-reason').textContent = p.reason;
+  document.getElementById('d-pending').innerHTML = p.pending?`<div class="pending-box">${p.pending}</div>`:'';
+  const fmtRmb = v => v===0?'—':(v<0?`-¥${fmt(v)}`:`¥${fmt(v)}`);
+  const activeBars = p.bars.filter(b=>!(b.may===0&&b.apr===0));
+  let rows='';
+  activeBars.forEach(b=>{
+    // If no prev data at all for this month, just show this month value, no comparison
+    if(!hasApr){
+      const md = fmtRmb(b.may);
+      rows+=`<div class="numrow">
+        <div class="numrow-name">${b.n}</div>
+        <div class="numrow-apr" style="color:var(--fg4)">—</div>
+        <div class="numrow-arrow">→</div>
+        <div class="numrow-may neu">${md}</div>
+        <div class="numrow-tag neu">—</div>
+      </div>`;
+      return;
+    }
+    const isNeg = b.apr<0;
+    const same = b.may===b.apr;
+    let mc,tc,tt;
+    if(same){mc='neu';tc='neu';tt='持平';}
+    else if(b.may>b.apr){mc='up';tc='up';tt=`+¥${(b.may-b.apr).toLocaleString('zh-CN')}`;}
+    else{mc=isNeg?'neg':'dn';tc=isNeg?'neg':'dn';tt=isNeg?`¥${Math.abs(b.may).toLocaleString('zh-CN')}`:'-¥'+(b.apr-b.may).toLocaleString('zh-CN');}
+    const ad=fmtRmb(b.apr), md=b.may===0?'—':fmtRmb(b.may);
+    const arrow=!same&&b.may!==0?'→':'=';
+    rows+=`<div class="numrow"><div class="numrow-name">${b.n}</div><div class="numrow-apr">${ad}</div><div class="numrow-arrow">${arrow}</div><div class="numrow-may ${mc}">${md}</div><div class="numrow-tag ${tc}">${tt}</div></div>`;
+  });
+  document.getElementById('d-chart').innerHTML=rows;
+  document.getElementById('overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeSheet(e){
+  if(e&&e.target!==document.getElementById('overlay'))return;
+  document.getElementById('overlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+// ═══════════════════════════════════════════
+// YEAR CALENDAR
+// ═══════════════════════════════════════════
+const MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const calColors = [
+  {bg:'var(--tint-blue)',   color:'var(--blue2)'},
+  {bg:'var(--tint-red)',    color:'var(--red)'},
+  {bg:'var(--tint-green)',  color:'var(--green)'},
+  {bg:'var(--tint-orange)', color:'var(--orange)'},
+  {bg:'var(--dept-lavender)', color:'var(--blue2)'},
+  {bg:'var(--dept-mint)',   color:'var(--green)'},
+];
+
+function openCalendar(){
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML='';
+  let colorIdx=0;
+  for(let m=1;m<=12;m++){
+    const cell = document.createElement('div');
+    const meta = monthMeta[m];
+    if(!meta){
+      cell.className='cal-cell empty';
+      cell.innerHTML=`<div class="cal-month-name" style="color:#aeaeb2">${MONTH_NAMES[m-1]}</div><div class="cal-empty-label">暂无数据</div>`;
+    } else {
+      const palette = calColors[colorIdx % calColors.length];
+      colorIdx++;
+      const prev = meta.prevTotal;
+      const curr = meta.total;
+      const diff = prev!=null ? curr-prev : null;
+      const pct  = diff!=null && prev>0 ? ((diff/prev)*100).toFixed(1) : null;
+      const isActive = m===currentMonth;
+      cell.className = `cal-cell has-data${isActive?' active-month':''}`;
+      cell.style.background = palette.bg;
+      let diffHtml='';
+      if(diff!=null){
+        const c=diff>0?'var(--red)':diff<0?'var(--green)':'var(--fg4)';
+        diffHtml=`<div class="cal-diff" style="color:${c}">${diff>=0?'+':''}${pct}%</div>`;
+      }
+      cell.innerHTML=`
+        ${isActive?'<div class="cal-dot"></div>':''}
+        <div class="cal-month-name" style="color:${palette.color}">${MONTH_NAMES[m-1]}</div>
+        <div class="cal-total" style="color:${palette.color}">¥${Math.round(curr/1000)}k</div>
+        ${diffHtml}`;
+      cell.onclick=()=>{ closeCalendar(); switchMonth(m); };
+    }
+    grid.appendChild(cell);
+  }
+  document.getElementById('cal-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeCalendar(){
+  document.getElementById('cal-overlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+function calOverlayClick(e){
+  if(e.target===document.getElementById('cal-overlay')) closeCalendar();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderMonthNav();
+renderKPI();
+renderSummary();
+renderCards('all');
+</script>
+</body>
+</html>

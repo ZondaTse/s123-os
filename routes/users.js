@@ -15,7 +15,7 @@ const upload = multer({ storage });
 
 // GET /api/users
 router.get('/', auth, (req, res) => {
-  const users = db.prepare('SELECT id,name,phone,role,avatar_url,level,exp,gmv_total,created_at FROM users ORDER BY gmv_total DESC').all();
+  const users = db.prepare('SELECT id,name,phone,role,avatar_url,level,exp,gmv_total,salary_access,created_at FROM users ORDER BY gmv_total DESC').all();
   const withLevel = users.map(u => ({ ...u, ...getLevelInfo(u.exp) }));
   res.json({ users: withLevel });
 });
@@ -23,12 +23,11 @@ router.get('/', auth, (req, res) => {
 // GET /api/users/:id
 router.get('/:id', auth, (req, res) => {
   const uid = req.params.id === 'me' ? req.user.id : req.params.id;
-  const user = db.prepare('SELECT id,name,phone,role,avatar_url,level,exp,gmv_total,created_at FROM users WHERE id=?').get(uid);
+  const user = db.prepare('SELECT id,name,phone,role,avatar_url,level,exp,gmv_total,salary_access,created_at FROM users WHERE id=?').get(uid);
   if (!user) return res.status(404).json({ error: '用户不存在' });
   const now = new Date();
   const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const monthly_gmv = (db.prepare('SELECT COALESCE(SUM(amount),0) as total FROM gmv_records WHERE user_id=? AND record_date LIKE ?').get(uid, ym + '%') || {}).total || 0;
-  // ranking by gmv_total
   const rank = db.prepare('SELECT COUNT(*)+1 as rank FROM users WHERE gmv_total > ?').get(user.gmv_total).rank;
   res.json({ user: { ...user, ...getLevelInfo(user.exp), monthly_gmv, rank } });
 });
@@ -93,6 +92,17 @@ router.post('/set-admin', auth, async (req, res) => {
   db.prepare('UPDATE users SET role=? WHERE id=?').run('admin', uid);
   const u = db.prepare('SELECT id,name,role FROM users WHERE id=?').get(uid);
   res.json({ ok: true, message: u.name + ' 已升级为管理员', user: u });
+});
+
+// POST /api/users/:id/salary-access  (admin only — toggle salary access)
+router.post('/:id/salary-access', auth, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权限' });
+  const uid = req.params.id;
+  const user = db.prepare('SELECT id,name,salary_access FROM users WHERE id=?').get(uid);
+  if (!user) return res.status(404).json({ error: '用户不存在' });
+  const newVal = user.salary_access ? 0 : 1;
+  db.prepare('UPDATE users SET salary_access=? WHERE id=?').run(newVal, uid);
+  res.json({ ok: true, salary_access: newVal, name: user.name });
 });
 
 module.exports = router;
