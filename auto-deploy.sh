@@ -11,6 +11,8 @@ FILES=(
   "public/index.html" "public/css/app.css"
   "public/js/utils.js" "public/js/chat.js"
   "public/js/exec.js" "public/js/wealth.js"
+  "public/salary.html" "public/salary-body.html"
+  "public/salary-app.js" "public/salary-styles.css"
 )
 
 # 并发下载
