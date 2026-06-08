@@ -24,9 +24,12 @@ const Wealth = {
   },
 
   render() {
+    this.showProductsPage();
+  },
+
+  renderOld() {
     const el = document.getElementById('wealth-content');
     if (!el) return;
-    
 
     const t = State.gmv || {}, m = State.monthly || {};
     const latestMoment = this.moments[0];
@@ -280,26 +283,22 @@ const Wealth = {
   // ── 商品中心 ──
   showProductsPage() {
     const el = document.getElementById('wealth-content');
-    
     const statusLabel = { new:'新品', hot:'爆款', stable:'普通', sleeping:'待清货', zombie:'停售' };
     const statusColor = { new:'#007AFF', hot:'#FF9500', stable:'#34C759', sleeping:'#8E8E93', zombie:'#FF3B30' };
     el.innerHTML = `
-      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between">
-        <button onclick="Wealth.render()" style="background:none;border:none;color:var(--blue);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 0;font-size:var(--font-base);font-weight:400;-webkit-tap-highlight-color:transparent">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-          返回
-        </button>
-        <span style="font-size:var(--font-base);font-weight:600;color:var(--text)">商品中心</span>
-        <button onclick="Wealth.showAddProduct()" style="background:none;border:none;color:var(--blue);cursor:pointer;display:flex;align-items:center;padding:6px 0;font-size:22px;font-weight:300;line-height:1;-webkit-tap-highlight-color:transparent">+</button>
-      </div>
-      <div class="product-grid">
-        ${this.products.length === 0 ? `<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--text3);font-size:var(--font-sm)">还没有商品，点右上角 + 新建</div>` : ''}
+      <div class="product-grid" style="padding-top:8px">
+        ${this.products.length === 0 ? `
+          <div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--text3)">
+            <div style="font-size:48px;margin-bottom:12px">📦</div>
+            <div>还没有商品</div>
+            <div style="margin-top:12px"><button onclick="Wealth.showAddProduct()" style="padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer">+ 新建商品</button></div>
+          </div>` : ''}
         ${this.products.map(p => `
-          <div class="product-card-apple" onclick="Wealth.openProduct(${p.id})">
-            <div class="product-card-img">
+          <div class="product-card-apple">
+            <div class="product-card-img" onclick="Wealth.openProduct(${p.id})">
               ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : `<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`}
             </div>
-            <div class="product-card-body">
+            <div class="product-card-body" onclick="Wealth.openProduct(${p.id})">
               <div class="product-card-status" style="color:${statusColor[p.lifecycle_status]||'#999'}">${statusLabel[p.lifecycle_status]||p.lifecycle_status}</div>
               <div class="product-card-name">${escHtml(p.name)}</div>
               <div class="product-card-price">¥${p.price||'–'}</div>
@@ -311,21 +310,70 @@ const Wealth = {
                       skus.map(s => {
                         const label = escHtml(s.properties||s.sku_outer_id||'');
                         if (s.stock > 0) {
-                          return `<span class="sku-stock-tag">${label} <b>${s.stock}</b></span>`;
+                          return '<span class="sku-stock-tag">' + label + ' <b>' + s.stock + '</b></span>';
                         } else {
-                          return `<span class="sku-stock-tag sku-stock-empty">${label} <b>缺</b></span>`;
+                          return '<span class="sku-stock-tag sku-stock-empty">' + label + ' <b>缺</b></span>';
                         }
                       }).join('') +
                     '</div>';
                   }
                 } catch(e){}
-                return p.stock!=null ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">库存 ${p.stock} 件</div>` : '';
+                return p.stock!=null ? '<div style="font-size:11px;color:var(--text3);margin-top:3px">库存 ' + p.stock + ' 件</div>' : '';
               })()}
+            </div>
+            <div style="padding:6px 10px;border-top:0.5px solid var(--sep);display:flex;gap:6px">
+              <button onclick="Wealth.shareProductToChat(${p.id})" style="flex:1;padding:7px 0;background:var(--fill2);border:none;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer">📤 分享</button>
+              <button onclick="Wealth.syncProductFromKm(${p.id},'${escHtml(p.sku)}')" style="flex:1;padding:7px 0;background:var(--fill2);border:none;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer">🔄 刷新</button>
             </div>
           </div>`).join('')}
       </div>
-      <div style="height:24px"></div>
+      <div style="height:80px"></div>
     `;
+  },
+
+  doCopy(id) {
+    const text = (window.__copyData || {})[id] || '';
+    if (!text) { toast('无内容'); return; }
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.cssText = 'position:fixed;opacity:0;top:0;left:0;width:1px;height:1px';
+    document.body.appendChild(el);
+    el.focus(); el.select();
+    try { document.execCommand('copy'); toast('已复制'); } catch(e) {
+      navigator.clipboard && navigator.clipboard.writeText(text).then(()=>toast('已复制')).catch(()=>toast('请长按复制'));
+    }
+    document.body.removeChild(el);
+  },
+
+  async shareProductToChat(id) {
+    const p = this.products.find(p => p.id === id);
+    if (!p) return;
+    // 生成分享文字
+    let text = '📦 商品：' + p.name + '\n';
+    if (p.price) text += '售价 ¥' + p.price + '\n';
+    if (p.stock != null) text += '库存 ' + p.stock + ' 件\n';
+    try {
+      const skus = p.skus_json ? JSON.parse(p.skus_json) : null;
+      if (skus && skus.length) {
+        text += skus.map(s => (s.properties||s.sku_outer_id) + ': ' + (s.stock||0) + '件').join(' · ');
+      }
+    } catch(e) {}
+    try {
+      await API.post('/api/messages', { content: text, type: 'text' });
+      toast('已分享到会话');
+    } catch(e) { toast('分享失败'); }
+  },
+
+  async syncProductFromKm(id, sku) {
+    if (!sku) { toast('无款号'); return; }
+    toast('刷新中...');
+    try {
+      await API.post('/api/kuaima/sync-product', { product_id: id, sku });
+      const pr = await API.get('/api/products');
+      this.products = pr.products;
+      this.showProductsPage();
+      toast('已刷新');
+    } catch(e) { toast('刷新失败：' + e.message); }
   },
 
   async publishStockToChat(text) {
@@ -402,7 +450,7 @@ const Wealth = {
           const copyId = 'copy_' + Date.now();
           window.__copyData = window.__copyData || {};
           window.__copyData[copyId] = copyText;
-          html += `<button onclick="Wealth.publishStockToChat(window.__copyData['${copyId}'])" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">📤 发布到会话</button> <button onclick="navigator.clipboard.writeText(window.__copyData['${copyId}']).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--fill2);color:var(--text);border:none;border-radius:8px;font-size:14px;cursor:pointer">📋 复制</button>`;
+          html += `<button onclick="Wealth.publishStockToChat(window.__copyData['${copyId}'])" style="margin-bottom:8px;margin-right:8px;padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">📤 发布到会话</button><button onclick="Wealth.doCopy('${copyId}')" style="margin-bottom:8px;padding:8px 18px;background:var(--fill2);color:var(--text);border:none;border-radius:8px;font-size:14px;cursor:pointer">📋 复制</button>`;
           html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:inherit;width:100%">';
           // 表头
           html += '<tr>';

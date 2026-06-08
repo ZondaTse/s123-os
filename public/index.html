@@ -162,6 +162,8 @@
 
   <!-- TAB 3: Wealth -->
   <div class="page" id="page-wealth">
+    <!-- 右上角新建商品按钮 -->
+    <button onclick="Wealth.showAddProduct()" style="position:fixed;top:10px;right:16px;z-index:200;width:36px;height:36px;background:var(--blue);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:300;line-height:1;box-shadow:0 2px 8px rgba(0,122,255,0.4)" id="wealth-add-btn">+</button>
     <div class="scroll-list" id="wealth-content">
       <div class="loading"><div class="spinner"></div>加载中...</div>
     </div>
@@ -455,6 +457,10 @@ function switchTab(t) {
   document.querySelectorAll('.tab-item').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
   document.getElementById('page-'+t).classList.add('active');
   const titles={chat:'S123旗舰店',exec:'执行',wealth:'发财圈',my:'我的'};
+  const wealthBtn = document.getElementById('wealth-add-btn');
+  const scanBtn = document.getElementById('scan-top-btn');
+  if (wealthBtn) wealthBtn.style.display = t === 'wealth' ? 'flex' : 'none';
+  if (scanBtn) scanBtn.style.display = t === 'chat' ? 'flex' : 'none';
   
   if(t==='wealth') Wealth.render();
   // 只在「我的」页显示日夜切换按钮
