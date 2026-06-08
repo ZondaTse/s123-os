@@ -328,6 +328,14 @@ const Wealth = {
     `;
   },
 
+  async publishStockToChat(text) {
+    try {
+      await API.post('/api/messages', { content: text, type: 'text' });
+      toast('已发布到会话');
+      hideSheet('product-edit-overlay');
+    } catch(e) { toast('发布失败：' + e.message); }
+  },
+
   async syncFromKuaima() {
     const sku = document.getElementById('product-edit-sku').value.trim();
     if (!sku) { toast('请先填写款号'); return; }
@@ -394,8 +402,8 @@ const Wealth = {
           const copyId = 'copy_' + Date.now();
           window.__copyData = window.__copyData || {};
           window.__copyData[copyId] = copyText;
-          html += `<button onclick="navigator.clipboard.writeText(window.__copyData['${copyId}']).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">📋 一键复制</button>`;
-          html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:15px;width:100%">';
+          html += `<button onclick="Wealth.publishStockToChat(window.__copyData['${copyId}'])" style="margin-bottom:8px;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">📤 发布到会话</button> <button onclick="navigator.clipboard.writeText(window.__copyData['${copyId}']).then(()=>toast('已复制'))" style="margin-bottom:8px;padding:6px 16px;background:var(--fill2);color:var(--text);border:none;border-radius:8px;font-size:14px;cursor:pointer">📋 复制</button>`;
+          html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:inherit;width:100%">';
           // 表头
           html += '<tr>';
           ['颜色', ...sizes, '合计'].forEach((h,i) => {
@@ -409,10 +417,10 @@ const Wealth = {
             html += `<td style="padding:6px 12px;border:1px solid var(--sep);font-weight:500;white-space:nowrap">${color}</td>`;
             sizes.forEach(sz => {
               const n = stocks[sz] || 0;
-              const st = n === 0 ? 'color:var(--red);font-weight:600' : 'font-size:16px;font-weight:600';
+              const st = n === 0 ? 'color:var(--red);font-weight:600' : 'font-weight:600';
               html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;${st}">${n === 0 ? '缺' : n}</td>`;
             });
-            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px">${total}</td>`;
+            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700">${total}</td>`;
             html += '</tr>';
           });
           // 合计行
@@ -420,9 +428,9 @@ const Wealth = {
           html += '<td style="padding:6px 12px;border:1px solid var(--sep);font-weight:700">合计</td>';
           sizes.forEach(sz => {
             const t = Object.values(colorMap).reduce((a,cm)=>a+(cm[sz]||0),0);
-            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px">${t}</td>`;
+            html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700">${t}</td>`;
           });
-          html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;font-size:16px;color:var(--green)">${d.stock}</td>`;
+          html += `<td style="padding:6px 12px;border:1px solid var(--sep);text-align:center;font-weight:700;color:var(--green)">${d.stock}</td>`;
           html += '</tr></table></div>';
           tip.innerHTML = html;
         } else {

@@ -482,9 +482,37 @@ const Chat = {
   async send() {
     if (this.atMode) {
       await this.handleAtSend();
-    } else {
-      await this.sendText();
+      return;
     }
+    // 检测「商品+款号」触发库存查询
+    const input = document.getElementById('chat-input');
+    const val = (input ? input.value : '').trim();
+    const stockMatch = val.match(/^商品\s*([A-Za-z0-9\-]+)$/);
+    if (stockMatch) {
+      const sku = stockMatch[1];
+      if (input) input.value = '';
+      await this.showStockCard(sku);
+      return;
+    }
+    await this.sendText();
+  },
+
+  async showStockCard(sku) {
+    try {
+      toast('查询中...');
+      const d = await API.get('/api/kuaima/goods?sku=' + encodeURIComponent(sku));
+      if (!d.found) { toast('快麦未找到该款号'); return; }
+      // 打开商品编辑面板并触发同步
+      showSheet('product-edit-overlay');
+      setTimeout(() => {
+        const skuInput = document.getElementById('product-edit-sku');
+        if (skuInput) {
+          skuInput.value = sku;
+          // 触发快麦同步显示库存表格
+          Wealth.syncFromKuaima();
+        }
+      }, 300);
+    } catch(e) { toast('查询失败：' + e.message); }
   },
 
   // oninput 钩子 — 检测 @ 触发
