@@ -497,18 +497,64 @@ const Chat = {
     await this.sendText();
   },
 
+  // 查库存入口 — 弹出输入框
+  showStockQuery() {
+    this.closePlusMenu();
+    const sku = window.prompt('输入款号查库存（如 4237）：');
+    if (sku && sku.trim()) this.showStockCard(sku.trim());
+  },
+
+  // 扫一扫 — 调用相机扫二维码
+  startScan() {
+    this.closePlusMenu();
+    const input = document.getElementById('qr-scanner');
+    if (!input) return;
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      input.value = '';
+      // 用BarcodeDetector扫码（iOS 17+ / Android Chrome支持）
+      if ('BarcodeDetector' in window) {
+        try {
+          const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'code_39'] });
+          const bitmap = await createImageBitmap(file);
+          const codes = await detector.detect(bitmap);
+          if (codes.length) {
+            const raw = codes[0].rawValue;
+            // 从二维码内容提取款号：S123-2604K4237-蓝色-XL → K4237 或完整编码
+            const match = raw.match(/S123-[\dA-Z]+([A-Z]\d+)/i) || raw.match(/([A-Z]\d{4,})/i);
+            const sku = match ? match[0].replace(/^S123-\w+-.*$/, raw.split('-').slice(0,2).join('-')) : raw;
+            toast('扫到：' + raw);
+            await this.showStockCard(raw);
+          } else {
+            toast('未识别到二维码，请手动输入款号');
+            this.showStockQuery();
+          }
+        } catch(err) {
+          toast('扫码失败，请手动输入');
+          this.showStockQuery();
+        }
+      } else {
+        toast('此设备不支持自动扫码，请手动输入款号');
+        this.showStockQuery();
+      }
+    };
+    input.click();
+  },
+
   async showStockCard(sku) {
     try {
       toast('查询中...');
       const d = await API.get('/api/kuaima/goods?sku=' + encodeURIComponent(sku));
       if (!d.found) { toast('快麦未找到该款号'); return; }
-      // 打开商品编辑面板并触发同步
+      // 打开商品编辑面板，预填款号并自动同步
+      // 先设置新建模式
+      Wealth.openNewProduct && Wealth.openNewProduct();
       showSheet('product-edit-overlay');
       setTimeout(() => {
         const skuInput = document.getElementById('product-edit-sku');
         if (skuInput) {
-          skuInput.value = sku;
-          // 触发快麦同步显示库存表格
+          skuInput.value = d.outer_id || sku;
           Wealth.syncFromKuaima();
         }
       }, 300);
