@@ -564,6 +564,8 @@ const Wealth = {
 };
 
 // ── My 我的 ──
+
+
 const My = {
   async init() {
     // 清除历史版本遗留的动态创建overlay节点
@@ -851,31 +853,59 @@ const My = {
   },
 
   openSalary() {
-    const el = document.getElementById('my-content');
-    if (!el) return;
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = 'none';
-    // 让my-content变成flex column，iframe用flex:1自然撑满
-    el.style.cssText = 'display:flex;flex-direction:column;overflow:hidden;padding:0';
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:var(--card);border-bottom:0.5px solid var(--border);flex-shrink:0">
-        <button onclick="My.closeSalary()" style="background:none;border:none;color:var(--green);cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;font-size:16px;font-weight:600;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--bg2)'" ontouchend="this.style.background='none'">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-          返回
-        </button>
-        <span style="font-size:16px;font-weight:700;color:var(--text)">工资简报</span>
-      </div>
-      <iframe src="/salary.html" style="flex:1;width:100%;border:none;min-height:0"></iframe>
-    `;
+
+    if (!document.getElementById('salary-styles-link')) {
+      const link = document.createElement('link');
+      link.id = 'salary-styles-link';
+      link.rel = 'stylesheet';
+      link.href = '/salary-styles.css';
+      document.head.appendChild(link);
+    }
+
+    let page = document.getElementById('salary-page');
+    if (!page) {
+      page = document.createElement('div');
+      page.id = 'salary-page';
+      page.style.cssText = 'position:fixed;inset:0;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,0)';
+      document.body.appendChild(page);
+    }
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    page.style.background = isDark ? '#000' : '#f2f2f7';
+    page.style.display = 'block';
+    const navBg = isDark ? 'rgba(22,22,24,0.95)' : 'rgba(242,242,247,0.95)';
+    const textColor = isDark ? '#ffffff' : '#1c1c1e';
+    const btnHover = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+    fetch('/salary-body.html?' + Date.now())
+      .then(r => r.text())
+      .then(bodyHtml => {
+        page.innerHTML =
+          '<div style="display:flex;align-items:center;gap:8px;padding:12px 16px 10px;background:' + navBg + ';backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(128,128,128,0.2);position:sticky;top:0;z-index:10">' +
+            '<button onclick="My.closeSalary()" style="background:none;border:none;color:#34c759;cursor:pointer;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;font-size:16px;font-weight:600;-webkit-tap-highlight-color:transparent">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+              '返回' +
+            '</button>' +
+            '<span style="font-size:16px;font-weight:700;color:' + textColor + '">工资简报</span>' +
+          '</div>' + bodyHtml;
+        const old = document.getElementById('salary-app-script');
+        if (old) old.remove();
+        const s = document.createElement('script');
+        s.id = 'salary-app-script';
+        s.src = '/salary-app.js?' + Date.now();
+        document.body.appendChild(s);
+      })
+      .catch(e => { console.error('salary load error', e); });
   },
 
   closeSalary() {
+    const page = document.getElementById('salary-page');
+    if (page) page.style.display = 'none';
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = '';
-    const el = document.getElementById('my-content');
-    if (el) el.style.cssText = '';  // 还原样式
-    this.render();
   },
+
 
   async manageSalaryAccess() {
     showSheet('salary-access-overlay');

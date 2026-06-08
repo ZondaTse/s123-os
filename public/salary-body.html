@@ -1,0 +1,71 @@
+
+<!-- Month nav bar -->
+<div class="month-nav" id="sal-month-nav"></div>
+
+<!-- KPI row -->
+<div class="kpi-row" id="sal-kpi-row"></div>
+
+<!-- Summary card -->
+<div class="summary-card">
+  <div id="sal-summary-title" class="summary-title"></div>
+  <div id="sal-summary-text" class="summary-text"></div>
+</div>
+
+<!-- Filter tabs -->
+<div class="tabs" id="sal-filter-tabs">
+  <button class="tab active" onclick="Sal_filterCards('all',this)">全部</button>
+  <button class="tab" onclick="Sal_filterCards('THEONE',this)">THEONE</button>
+  <button class="tab" onclick="Sal_filterCards('直播',this)">直播</button>
+  <button class="tab" onclick="Sal_filterCards('剪辑号',this)">剪辑号</button>
+  <button class="tab" onclick="Sal_filterCards('陈先生',this)">陈先生项目</button>
+  <button class="tab" onclick="Sal_filterCards('仓库',this)">仓库</button>
+  <button class="tab" onclick="Sal_filterCards('售后',this)">售后</button>
+  <button class="tab" onclick="Sal_filterCards('up',this)">↑ 上涨</button>
+  <button class="tab" onclick="Sal_filterCards('dn',this)">↓ 下降</button>
+  <button class="tab" onclick="Sal_filterCards('neu',this)">→ 不变</button>
+</div>
+
+<div id="sal-grid-container"></div>
+<div id="sal-pending-footer-wrap"></div>
+
+<!-- Person detail sheet -->
+<div class="overlay" id="sal-overlay" onclick="Sal_closeSheet(event)">
+  <div class="sheet" id="sal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-top">
+      <div class="sheet-name" id="sal-d-name"></div>
+      <div id="sal-d-compare"></div>
+      <div id="sal-d-diff" style="display:none"></div>
+    </div>
+    <div class="reason-sec">
+      <div class="reason-sec-title">变化原因</div>
+      <div class="reason-text" id="sal-d-reason"></div>
+      <div id="sal-d-pending"></div>
+    </div>
+    <div class="chart-sec">
+      <div class="chart-title">工资构成明细对比</div>
+      <div style="display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;"></div>
+        <div style="font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;">上月</div>
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;">→</div>
+        <div style="font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;">本月</div>
+        <div style="font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;">变化</div>
+      </div>
+      <div id="sal-d-chart"></div>
+    </div>
+    <button class="close-btn" onclick="Sal_closeSheet()">关闭</button>
+  </div>
+</div>
+
+<!-- Year calendar overlay -->
+<div class="cal-overlay" id="sal-cal-overlay" onclick="Sal_calOverlayClick(event)">
+  <div class="cal-sheet" id="sal-cal-sheet">
+    <div class="cal-handle"></div>
+    <div class="cal-header">
+      <div class="cal-year">2026</div>
+      <div class="cal-subtitle">点击已有数据的月份查看简报</div>
+    </div>
+    <div class="cal-grid" id="sal-cal-grid"></div>
+    <button class="close-btn" style="margin-top:16px;" onclick="Sal_closeCalendar()">关闭</button>
+  </div>
+</div>
