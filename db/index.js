@@ -165,6 +165,10 @@ function init() {
     );
   `);
 
+  // 兼容旧数据库：补充新增列
+  try { db.prepare('ALTER TABLE products ADD COLUMN skus_json TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE users ADD COLUMN salary_target INTEGER DEFAULT 0').run(); } catch(e) {}
+
   const upsert = db.prepare('INSERT OR IGNORE INTO exp_config VALUES (?,?)');
   const actions = [
     ['send_message', 1], ['complete_task', 10], ['add_experience', 20],
