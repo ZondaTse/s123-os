@@ -833,7 +833,6 @@ const My = {
   },
 
   openSalary() {
-    // 打开工资简报 — 在新 bottom sheet 内嵌 iframe
     let overlay = document.getElementById('salary-overlay');
     if (!overlay) {
       overlay = document.createElement('div');
@@ -849,12 +848,17 @@ const My = {
         </div>`;
       overlay.addEventListener('click', (e) => { if (e.target === overlay) My.closeSalary(); });
       document.body.appendChild(overlay);
-    }
-    requestAnimationFrame(() => {
+      // 需要两帧确保初始状态已渲染，再触发过渡动画
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'all';
+        document.getElementById('salary-sheet').style.transform = 'translateY(0)';
+      }));
+    } else {
       overlay.style.opacity = '1';
       overlay.style.pointerEvents = 'all';
       document.getElementById('salary-sheet').style.transform = 'translateY(0)';
-    });
+    }
     document.body.style.overflow = 'hidden';
   },
 
@@ -886,12 +890,16 @@ const My = {
         </div>`;
       overlay.addEventListener('click', (e) => { if (e.target === overlay) My.closeSalaryAccess(); });
       document.body.appendChild(overlay);
-    }
-    requestAnimationFrame(() => {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'all';
+        document.getElementById('salary-access-sheet').style.transform = 'translateY(0)';
+      }));
+    } else {
       overlay.style.opacity = '1';
       overlay.style.pointerEvents = 'all';
       document.getElementById('salary-access-sheet').style.transform = 'translateY(0)';
-    });
+    }
     document.body.style.overflow = 'hidden';
     // Load users
     try {
