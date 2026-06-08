@@ -522,6 +522,16 @@ const My = {
         </div>
       </div>
 
+      ${u.role !== 'admin' ? `
+      <div style="height:8px"></div>
+      <div class="menu-group">
+        <div class="menu-row" onclick="My.upgradeToAdmin()">
+          <div class="menu-icon" style="background:#f3e5f5"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#9c27b0" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+          <div class="menu-row-label">升级为管理员</div>
+          <span class="menu-arrow">›</span>
+        </div>
+      </div>` : ''}
+
       ${u.role === 'admin' ? `
       <div style="height:8px"></div>
       <div class="menu-group">
@@ -639,6 +649,16 @@ const My = {
         <span class="status-badge status-${t.status==='todo'?'todo':t.status==='doing'?'doing':'done'}">${t.status==='todo'?'待做':t.status==='doing'?'进行中':'完成'}</span>
       </div>`).join('');
     } catch { el.innerHTML = '<div class="empty"><div class="empty-text">加载失败</div></div>'; }
+  },
+
+  async upgradeToAdmin() {
+    const pwd = window.prompt('输入管理员密码：');
+    if (!pwd) return;
+    try {
+      const r = await API.post('/api/users/set-admin', { admin_password: pwd });
+      toast(r.message || '已升级为管理员，请重新登录');
+      setTimeout(() => location.reload(), 1500);
+    } catch(e) { toast('失败：' + e.message); }
   },
 
   async restartServer() {
