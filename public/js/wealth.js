@@ -354,10 +354,51 @@ const Wealth = {
         }
         document.getElementById('product-name-group').style.display = '';
         document.getElementById('product-price-group').style.display = '';
-        // SKU库存明细提示
-        const skuLines = (d.skus||[]).filter(s=>s.stock>0).slice(0,5).map(s=>`${s.properties||s.sku_outer_id}: ${s.stock}件`).join(' · ');
-        tip.textContent = `✅ 同步成功：${d.name}，售价¥${d.price}` + (skuLines ? `\n${skuLines}` : `，库存${d.stock}`);
+        // SKU库存表格展示
         tip.style.color = 'var(--green)';
+        const skus = d.skus || [];
+        if (skus.length) {
+          // 解析颜色和尺码
+          const colorMap = {};
+          const sizeSet = new Set();
+          skus.forEach(s => {
+            const parts = (s.properties || s.sku_outer_id || '').split(/[-;]/);
+            const color = parts[0] || '默认';
+            const size = parts[1] || '';
+            if (size) sizeSet.add(size);
+            if (!colorMap[color]) colorMap[color] = {};
+            colorMap[color][size || '库存'] = s.stock || 0;
+          });
+          const sizes = [...sizeSet];
+          // 构建表格HTML
+          let html = `<div style="color:var(--green);margin-bottom:6px">✅ 同步成功：${d.name}，库存${d.stock}件</div>`;
+          html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:11px;width:100%">';
+          html += '<tr><th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:left">颜色</th>';
+          sizes.forEach(sz => { html += `<th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:center">${sz}</th>`; });
+          html += '<th style="padding:3px 8px;border:1px solid var(--sep);background:var(--fill2);text-align:center">合计</th></tr>';
+          Object.entries(colorMap).forEach(([color, stocks]) => {
+            const total = Object.values(stocks).reduce((a,b)=>a+b,0);
+            html += `<tr><td style="padding:3px 8px;border:1px solid var(--sep)">${color}</td>`;
+            sizes.forEach(sz => {
+              const n = stocks[sz] || 0;
+              const style = n === 0 ? 'color:var(--red)' : '';
+              html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;${style}">${n === 0 ? '缺' : n}</td>`;
+            });
+            html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${total}</td></tr>`;
+          });
+          // 合计行
+          html += '<tr style="background:var(--fill2)">';
+          html += '<td style="padding:3px 8px;border:1px solid var(--sep);font-weight:600">合计</td>';
+          sizes.forEach(sz => {
+            const total = Object.values(colorMap).reduce((a,cm)=>a+(cm[sz]||0),0);
+            html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${total}</td>`;
+          });
+          html += `<td style="padding:3px 8px;border:1px solid var(--sep);text-align:center;font-weight:600">${d.stock}</td></tr>`;
+          html += '</table></div>';
+          tip.innerHTML = html;
+        } else {
+          tip.textContent = `✅ 同步成功：${d.name}，库存${d.stock}`;
+        }
         if (d.image_url) toast('快麦有商品图，保存后自动导入');
       }
     } catch(e) {
