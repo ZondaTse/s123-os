@@ -24,9 +24,13 @@
       <button class="login-tab" onclick="switchLoginTab('register')">注册</button>
     </div>
     <div id="login-fields">
-      <div class="login-field"><span class="login-field-label">手机号</span><input id="login-phone" type="tel" placeholder="请输入手机号"></div>
-      <div class="login-field"><span class="login-field-label">密码</span><input id="login-pwd" type="password" placeholder="请输入密码"></div>
-      <button class="login-btn" onclick="doLogin()">登录</button>
+      <div class="login-field"><span class="login-field-label">手机号</span><input id="login-phone" type="tel" placeholder="请输入手机号" autocomplete="username"></div>
+      <div class="login-field"><span class="login-field-label">密码</span><input id="login-pwd" type="password" placeholder="请输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0 12px">
+        <input type="checkbox" id="remember-me" style="width:16px;height:16px;accent-color:#07c160;cursor:pointer">
+        <label for="remember-me" style="font-size:13px;color:var(--text3,#8e8e93);cursor:pointer">记住账号密码</label>
+      </div>
+      <button class="login-btn" id="login-submit-btn" onclick="doLogin()">登录</button>
     </div>
     <div id="register-fields" style="display:none">
       <div class="login-field"><span class="login-field-label">姓名</span><input id="reg-name" type="text" placeholder="请输入姓名"></div>
@@ -433,9 +437,29 @@ function switchLoginTab(t) {
 async function doLogin() {
   const phone = document.getElementById('login-phone').value.trim();
   const password = document.getElementById('login-pwd').value;
+  const remember = document.getElementById('remember-me').checked;
   const err = document.getElementById('login-error'); err.textContent = '';
-  try { const d = await API.post('/api/auth/login',{phone,password}); localStorage.setItem('s123_token',d.token); State.user=d.user; bootApp(); }
-  catch(e) { err.textContent = e.message||'登录失败'; }
+  const btn = document.getElementById('login-submit-btn');
+  btn.disabled = true; btn.textContent = '登录中...';
+  try {
+    const d = await API.post('/api/auth/login', {phone, password});
+    // 记住账号密码
+    if (remember) {
+      localStorage.setItem('s123_saved_phone', phone);
+      localStorage.setItem('s123_saved_pwd', password);
+      localStorage.setItem('s123_remember', '1');
+    } else {
+      localStorage.removeItem('s123_saved_phone');
+      localStorage.removeItem('s123_saved_pwd');
+      localStorage.removeItem('s123_remember');
+    }
+    localStorage.setItem('s123_token', d.token);
+    State.user = d.user;
+    bootApp();
+  } catch(e) {
+    err.textContent = e.message || '登录失败';
+    btn.disabled = false; btn.textContent = '登录';
+  }
 }
 async function doRegister() {
   const name=document.getElementById('reg-name').value.trim(), phone=document.getElementById('reg-phone').value.trim();
@@ -477,6 +501,14 @@ function updateThemeIcon() {
 }
 (async()=>{
   initTheme(); updateThemeIcon();
+  // 自动填入已保存的账号密码
+  if (localStorage.getItem('s123_remember') === '1') {
+    const savedPhone = localStorage.getItem('s123_saved_phone');
+    const savedPwd   = localStorage.getItem('s123_saved_pwd');
+    if (savedPhone) document.getElementById('login-phone').value = savedPhone;
+    if (savedPwd)   document.getElementById('login-pwd').value   = savedPwd;
+    document.getElementById('remember-me').checked = true;
+  }
   const t=localStorage.getItem('s123_token'); if(!t) return;
   try { const d=await API.get('/api/auth/me'); State.user=d.user; bootApp(); }
   catch { localStorage.removeItem('s123_token'); }
