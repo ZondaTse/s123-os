@@ -85,4 +85,15 @@ router.post('/me/bookmarks', auth, (req, res) => {
   res.json({ ok: true });
 });
 
+// POST /api/users/set-admin  一次性接口，用管理员密码把指定用户设为admin
+router.post('/set-admin', async (req, res) => {
+  const { admin_password, user_id } = req.body;
+  if (admin_password !== 's123admin') return res.status(403).json({ error: '密码错误' });
+  const uid = parseInt(user_id);
+  if (!uid) return res.status(400).json({ error: '缺少user_id' });
+  db.prepare('UPDATE users SET role=? WHERE id=?').run('admin', uid);
+  const u = db.prepare('SELECT id,name,role FROM users WHERE id=?').get(uid);
+  res.json({ ok: true, user: u });
+});
+
 module.exports = router;
