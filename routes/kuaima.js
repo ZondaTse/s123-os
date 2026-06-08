@@ -151,21 +151,24 @@ router.get('/goods', auth, async (req, res) => {
     // Step 1: 本地索引查找精确 outerId，逐个查快麦直到找到有效款
     const skuUpper = sku.toUpperCase();
     const idxRows = db.prepare(
-      "SELECT outer_id FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 10"
+      "SELECT outer_id, title FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 10"
     ).all('%' + skuUpper + '%');
 
     let g = null;
     let outerId = '';
 
     // 用索引第一条或原始输入查快麦
-    const qid = idxRows.length ? idxRows[0].outer_id : sku;
+    console.log('idx search for:', skuUpper, 'found:', idxRows.length, idxRows.map(r=>r.outer_id));
+    const idxRow = idxRows[0] || null;
+    const qid = idxRow ? idxRow.outer_id : sku;
+    const idxTitle = idxRow ? idxRow.title : null;
     const data = await kuaimaiRequest('item.list.query', { outerId: qid, pageNo: 1, pageSize: 5 }, 'hmac');
     if (data.success) {
-      const valid = (data.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
-      if (valid.length) {
-        g = valid[0];
-        outerId = g.outerId || qid;
-      }
+      const items = data.items || [];
+      // 优先找outerId包含输入款号的
+      const matched = items.filter(i => (i.outerId||'').toUpperCase().includes(skuUpper));
+      g = matched[0] || items[0] || null;
+      outerId = qid; // 保持款级别outerId
     }
 
     if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号' });
@@ -204,20 +207,29 @@ router.get('/goods', auth, async (req, res) => {
       stock: stockMap[s.skuOuterId] !== undefined ? stockMap[s.skuOuterId] : null,
     }));
 
-    // 如果没有SKU（isSkuItem但skus为空），用stockMap总量
-    if (!skus.length) totalStock = Object.values(stockMap).reduce((a, b) => a + b, 0);
+    // 散件模式：从stockMap构建SKU列表
+    let finalSkus = skus;
+    if (!finalSkus.length && Object.keys(stockMap).length) {
+      finalSkus = Object.entries(stockMap).map(([skuOuterId, stock]) => ({
+        sku_id: '', sku_outer_id: skuOuterId,
+        properties: skuOuterId.replace(outerId + '-', ''),
+        stock, price: parseFloat(g.priceOutput || 0),
+        cost: parseFloat(g.purchasePrice || 0),
+        image_url: null,
+      }));
+    }
 
     res.json({
       found: true,
       outer_id: outerId,
       sys_item_id: String(g.sysItemId || ''),
-      name: g.title || sku,
+      name: idxTitle || g.title || sku,
       short_title: g.shortTitle || null,
       price: parseFloat(g.priceOutput || 0),
       cost: parseFloat(g.purchasePrice || 0),
       image_url: g.picPath && !g.picPath.includes('no_pic') ? g.picPath : null,
       stock: totalStock,
-      skus,
+      skus: finalSkus,
       _matched_total: 0,
     });
   } catch (e) {
