@@ -62,7 +62,7 @@ function kuaimaiRequest(method, extraParams, signMethod = 'hmac') {
       });
     });
     req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('快麦请求超时')); });
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('快麦请求超时')); });
     req.write(body);
     req.end();
   });
@@ -157,18 +157,14 @@ router.get('/goods', auth, async (req, res) => {
     let g = null;
     let outerId = '';
 
-    // 把索引结果 + 原始输入都作为候选
-    const candidates = idxRows.map(r => r.outer_id);
-    if (!candidates.length) candidates.push(sku);
-
-    for (const qid of candidates) {
-      const data = await kuaimaiRequest('item.list.query', { outerId: qid, pageNo: 1, pageSize: 5 }, 'hmac');
-      if (!data.success) continue;
+    // 用索引第一条或原始输入查快麦
+    const qid = idxRows.length ? idxRows[0].outer_id : sku;
+    const data = await kuaimaiRequest('item.list.query', { outerId: qid, pageNo: 1, pageSize: 5 }, 'hmac');
+    if (data.success) {
       const valid = (data.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
       if (valid.length) {
         g = valid[0];
         outerId = g.outerId || qid;
-        break;
       }
     }
 
