@@ -1,5 +1,5 @@
 #!/bin/bash
-# 自动部署脚本：从GitHub raw拉最新文件
+# 自动部署脚本：从GitHub raw拉最新文件（并发下载）
 BASE="https://raw.githubusercontent.com/ZondaTse/s123-os/main"
 DIR="/root/s123"
 FILES=(
@@ -12,11 +12,12 @@ FILES=(
   "public/js/utils.js" "public/js/chat.js"
   "public/js/exec.js" "public/js/wealth.js"
 )
-UPDATED=0
+
+# 并发下载
 for f in "${FILES[@]}"; do
-  if curl -sf --max-time 15 --retry 2 "$BASE/$f" -o "$DIR/$f" 2>/dev/null; then
-    UPDATED=$((UPDATED+1))
-  fi
+  curl -sf --max-time 10 "$BASE/$f" -o "$DIR/$f" &
 done
-echo "$(date): $UPDATED/${#FILES[@]} files updated"
+wait
+
+echo "$(date): deploy done"
 pm2 restart s123 --silent

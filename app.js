@@ -46,15 +46,18 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
         'public/js/exec.js',
         'public/js/wealth.js',
       ];
-      let updated = 0;
-      for (const f of files) {
-        try {
-          execSync(`curl -sf --max-time 15 --retry 2 "${base}/${f}" -o "/root/s123/${f}"`, { timeout: 20000 });
-          updated++;
-        } catch(e) { console.error('curl failed for', f, e.message); }
-      }
-      console.log(`✅ ${updated}/${files.length} files updated, restarting...`);
-      setTimeout(() => execSync('pm2 restart s123', { stdio: 'inherit' }), 500);
+      // 并发下载所有文件
+      const { spawn } = require('child_process');
+      const downloads = files.map(f => new Promise(resolve => {
+        const p = spawn('curl', ['-sf', '--max-time', '10', `${base}/${f}`, '-o', `/root/s123/${f}`]);
+        p.on('close', code => resolve({ f, ok: code === 0 }));
+        setTimeout(() => { try { p.kill(); } catch(e){} resolve({ f, ok: false }); }, 12000);
+      }));
+      Promise.all(downloads).then(results => {
+        const updated = results.filter(r => r.ok).length;
+        console.log(`✅ ${updated}/${files.length} files updated, restarting...`);
+        execSync('pm2 restart s123', { stdio: 'inherit' });
+      });
     } catch (e) {
       console.error('❌ Webhook deploy failed:', e.message);
     }
