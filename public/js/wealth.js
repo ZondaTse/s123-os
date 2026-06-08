@@ -566,6 +566,24 @@ const Wealth = {
 // ── My 我的 ──
 const My = {
   async init() {
+    // 清除历史版本遗留的动态创建overlay节点
+    ['salary-overlay','salary-sheet','salary-access-overlay','salary-access-sheet'].forEach(id => {
+      const old = document.getElementById(id);
+      if (old && !old.closest('#app > *') && old.parentElement === document.body) {
+        // 只删除直接挂在body上的（动态创建的），不删HTML里的静态节点
+        // 判断：静态节点在#app内部或在script之前的固定位置
+      }
+    });
+    // 更简单：直接remove所有body直接子节点中id为salary-overlay的重复项
+    const allSalaryOverlays = document.querySelectorAll('#salary-overlay');
+    if (allSalaryOverlays.length > 1) {
+      // 保留第一个（HTML静态的），删除其余动态创建的
+      for (let i = 1; i < allSalaryOverlays.length; i++) allSalaryOverlays[i].remove();
+    }
+    const allAccessOverlays = document.querySelectorAll('#salary-access-overlay');
+    if (allAccessOverlays.length > 1) {
+      for (let i = 1; i < allAccessOverlays.length; i++) allAccessOverlays[i].remove();
+    }
     this.render();
   },
 
@@ -833,6 +851,13 @@ const My = {
   },
 
   openSalary() {
+    // 清除历史版本遗留的动态创建节点（非静态HTML的salary-overlay）
+    document.querySelectorAll('[id^="salary-"]').forEach(el => {
+      if (el.id !== 'salary-overlay' && el.id !== 'salary-iframe' &&
+          el.id !== 'salary-access-overlay' && el.id !== 'salary-access-list') {
+        el.remove();
+      }
+    });
     // 懒加载 iframe src
     const iframe = document.getElementById('salary-iframe');
     if (iframe && !iframe.src) iframe.src = '/salary.html';
