@@ -94,10 +94,19 @@ const Chat = {
   },
 
   appendMsg(m) {
+    const prev = State.messages[State.messages.length - 1];
     State.messages.push(m);
     const el = document.getElementById('chat-messages');
     if (!el) return;
     if (el.querySelector('.empty')) el.innerHTML = '';
+    // 超5分钟显示时间（微信逻辑）
+    const showTime = !prev || (new Date(m.created_at) - new Date(prev.created_at)) > 300000;
+    if (showTime) {
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'msg-time';
+      timeDiv.textContent = fmtTime(m.created_at);
+      el.appendChild(timeDiv);
+    }
     const div = document.createElement('div');
     div.innerHTML = this.renderMsg(m);
     if (div.firstElementChild) el.appendChild(div.firstElementChild);

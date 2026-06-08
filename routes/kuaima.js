@@ -304,12 +304,14 @@ router.post('/sync-product', auth, async (req, res) => {
   }
 });
 
-// POST /api/kuaima/restart-server (管理员重启服务)
+// POST /api/kuaima/restart-server (管理员拉取最新代码并重启)
 router.post('/restart-server', auth, (req, res) => {
-  res.json({ ok: true, message: '服务重启中…' });
+  res.json({ ok: true, message: '部署中…' });
   setTimeout(() => {
-    const { execSync } = require('child_process');
-    try { execSync('pm2 restart s123', { stdio: 'inherit' }); } catch(e) {}
+    const { spawn } = require('child_process');
+    const script = '/root/s123/auto-deploy.sh';
+    const p = spawn('bash', [script], { detached: true, stdio: 'ignore' });
+    p.unref();
   }, 300);
 });
 

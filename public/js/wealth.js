@@ -740,14 +740,14 @@ const My = {
   },
 
   async restartServer() {
-    if (!window.confirm('确认重启服务器？重启期间约5秒不可用')) return;
+    if (!window.confirm('拉取最新代码并重启？约15秒后自动刷新')) return;
     try {
       await API.post('/api/kuaima/restart-server', {});
-      toast('重启中，5秒后刷新页面');
-      setTimeout(() => location.reload(), 6000);
+      toast('部署中，15秒后自动刷新...');
+      setTimeout(() => location.reload(), 16000);
     } catch(e) {
-      toast('已发送重启指令');
-      setTimeout(() => location.reload(), 6000);
+      toast('已发送指令，15秒后刷新');
+      setTimeout(() => location.reload(), 16000);
     }
   },
 
