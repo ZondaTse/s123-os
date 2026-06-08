@@ -105,6 +105,15 @@ setInterval(() => {
 app.get('/salary.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/salary.html'));
 });
+app.get('/salary-body.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/salary-body.html'));
+});
+app.get('/salary-app.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/salary-app.js'));
+});
+app.get('/salary-styles.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/salary-styles.css'));
+});
 
 // SPA fallback
 app.get('*', (req, res) => {
