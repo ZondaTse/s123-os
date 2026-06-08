@@ -833,118 +833,43 @@ const My = {
   },
 
   openSalary() {
-    let overlay = document.getElementById('salary-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'salary-overlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s';
-      overlay.innerHTML = `
-        <div id="salary-sheet" style="width:100%;height:92vh;border-radius:20px 20px 0 0;overflow:hidden;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);background:var(--bg,#f2f2f7);display:flex;flex-direction:column">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:var(--card,#fff);border-bottom:0.5px solid var(--border,rgba(0,0,0,0.08));flex-shrink:0">
-            <div style="font-size:17px;font-weight:700;color:var(--text,#1c1c1e)">📊 工资简报</div>
-            <button onclick="My.closeSalary()" style="background:var(--bg2,#e5e5ea);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3,#8e8e93)">×</button>
-          </div>
-          <iframe src="/salary.html" style="flex:1;border:none;width:100%" loading="lazy"></iframe>
-        </div>`;
-      overlay.addEventListener('click', (e) => { if (e.target === overlay) My.closeSalary(); });
-      document.body.appendChild(overlay);
-      // 需要两帧确保初始状态已渲染，再触发过渡动画
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'all';
-        document.getElementById('salary-sheet').style.transform = 'translateY(0)';
-      }));
-    } else {
-      overlay.style.opacity = '1';
-      overlay.style.pointerEvents = 'all';
-      document.getElementById('salary-sheet').style.transform = 'translateY(0)';
-    }
-    document.body.style.overflow = 'hidden';
+    // 懒加载 iframe src
+    const iframe = document.getElementById('salary-iframe');
+    if (iframe && !iframe.src) iframe.src = '/salary.html';
+    showSheet('salary-overlay');
   },
 
   closeSalary() {
-    const overlay = document.getElementById('salary-overlay');
-    if (!overlay) return;
-    const sheet = document.getElementById('salary-sheet');
-    sheet.style.transform = 'translateY(100%)';
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    document.body.style.overflow = '';
+    hideSheet('salary-overlay');
   },
 
   async manageSalaryAccess() {
-    // Admin: show user list with salary_access toggle
-    let overlay = document.getElementById('salary-access-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'salary-access-overlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s';
-      overlay.innerHTML = `
-        <div id="salary-access-sheet" style="width:100%;max-height:80vh;border-radius:20px 20px 0 0;overflow-y:auto;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);background:var(--bg,#f2f2f7);padding-bottom:32px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;position:sticky;top:0;background:var(--bg,#f2f2f7);z-index:1;border-bottom:0.5px solid var(--border,rgba(0,0,0,0.08))">
-            <div style="font-size:17px;font-weight:700;color:var(--text,#1c1c1e)">💰 财务权限管理</div>
-            <button onclick="My.closeSalaryAccess()" style="background:var(--bg2,#e5e5ea);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3,#8e8e93)">×</button>
-          </div>
-          <div style="padding:8px 16px 4px;font-size:13px;color:var(--text3,#8e8e93)">开启后该成员可在「我的」页面查看工资简报</div>
-          <div id="salary-access-list" style="padding:8px 16px"><div class="loading"><div class="spinner"></div>加载中...</div></div>
-        </div>`;
-      overlay.addEventListener('click', (e) => { if (e.target === overlay) My.closeSalaryAccess(); });
-      document.body.appendChild(overlay);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'all';
-        document.getElementById('salary-access-sheet').style.transform = 'translateY(0)';
-      }));
-    } else {
-      overlay.style.opacity = '1';
-      overlay.style.pointerEvents = 'all';
-      document.getElementById('salary-access-sheet').style.transform = 'translateY(0)';
-    }
-    document.body.style.overflow = 'hidden';
-    // Load users
+    showSheet('salary-access-overlay');
+    const list = document.getElementById('salary-access-list');
+    list.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
     try {
       const d = await API.get('/api/users');
-      const list = document.getElementById('salary-access-list');
       list.innerHTML = d.users.map(u => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border,rgba(0,0,0,0.07))">
           <div style="display:flex;align-items:center;gap:10px">
             ${getAvatarHtml(u, 36, '50%')}
             <div>
-              <div style="font-size:15px;font-weight:600;color:var(--text,#1c1c1e)">${escHtml(u.name)}</div>
-              <div style="font-size:12px;color:var(--text3,#8e8e93)">${roleLabel(u.role)}</div>
+              <div style="font-size:15px;font-weight:600;color:var(--text)">${escHtml(u.name)}</div>
+              <div style="font-size:12px;color:var(--text3)">${roleLabel(u.role)}</div>
             </div>
           </div>
-          <button id="salary-btn-${u.id}"
-            onclick="My.toggleSalaryAccess(${u.id})"
-            style="padding:6px 14px;border-radius:20px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;${u.salary_access ? 'background:#34c759;color:#fff' : 'background:var(--bg2,#e5e5ea);color:var(--text3,#8e8e93)'}">
+          <button id="salary-btn-${u.id}" onclick="My.toggleSalaryAccess(${u.id})"
+            style="padding:6px 14px;border-radius:20px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;${u.salary_access ? 'background:#34c759;color:#fff' : 'background:var(--bg2);color:var(--text3)'}">
             ${u.salary_access ? '已开启' : '未开启'}
           </button>
         </div>`).join('');
     } catch(e) {
-      document.getElementById('salary-access-list').innerHTML = '<div style="color:var(--text3);padding:16px 0">加载失败</div>';
+      list.innerHTML = '<div style="color:var(--text3);padding:16px 0">加载失败</div>';
     }
   },
 
-  async toggleSalaryAccess(uid) {
-    try {
-      const r = await API.post(`/api/users/${uid}/salary-access`, {});
-      const btn = document.getElementById(`salary-btn-${uid}`);
-      if (btn) {
-        btn.style.background = r.salary_access ? '#34c759' : 'var(--bg2,#e5e5ea)';
-        btn.style.color = r.salary_access ? '#fff' : 'var(--text3,#8e8e93)';
-        btn.textContent = r.salary_access ? '已开启' : '未开启';
-      }
-      toast(`${r.name} 财务权限已${r.salary_access ? '开启' : '关闭'}`);
-    } catch(e) { toast('操作失败：' + e.message); }
-  },
-
   closeSalaryAccess() {
-    const overlay = document.getElementById('salary-access-overlay');
-    if (!overlay) return;
-    document.getElementById('salary-access-sheet').style.transform = 'translateY(100%)';
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    document.body.style.overflow = '';
+    hideSheet('salary-access-overlay');
   },
 
   logout() {
