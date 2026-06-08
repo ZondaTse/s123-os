@@ -148,53 +148,31 @@ router.get('/goods', auth, async (req, res) => {
   if (!sku) return res.status(400).json({ error: '请提供款号' });
 
   try {
-    // Step 1: 本地索引查找 outerId（包含输入款号的）
+    // Step 1: 本地索引查找精确 outerId，逐个查快麦直到找到有效款
     const skuUpper = sku.toUpperCase();
     const idxRows = db.prepare(
-      "SELECT outer_id, title FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 10"
+      "SELECT outer_id FROM km_item_index WHERE UPPER(outer_id) LIKE ? LIMIT 10"
     ).all('%' + skuUpper + '%');
 
-    let outerId = '';
-    if (idxRows.length) {
-      // 优先精确包含，取第一条
-      outerId = idxRows[0].outer_id;
-    }
-
-    // Step 1b: 查商品详情
     let g = null;
-    const queryOuterId = outerId || sku; // 本地找到用outerId，否则直接用输入值试试
+    let outerId = '';
 
-    // 先用 outerId 精确查（支持完整编码如 S123-2603SK4228）
-    const directData = await kuaimaiRequest('item.list.query', {
-      outerId: queryOuterId,
-      pageNo: 1,
-      pageSize: 10,
-    }, 'hmac');
-    if (directData.success && (directData.items || []).length) {
-      const all = (directData.items || []).filter(i => i.isSkuItem === 1);
-      // 优先精确匹配
-      g = all.find(i => (i.outerId || '').toUpperCase() === queryOuterId.toUpperCase())
-        || all.find(i => (i.outerId || '').toUpperCase().includes(skuUpper))
-        || all[0] || null;
-      if (g) outerId = g.outerId || '';
-    }
+    // 把索引结果 + 原始输入都作为候选
+    const candidates = idxRows.map(r => r.outer_id);
+    if (!candidates.length) candidates.push(sku);
 
-    // 还没找到，用 sysOuterId 再试
-    if (!g) {
-      const itemData = await kuaimaiRequest('item.list.query', {
-        sysOuterId: sku,
-        pageNo: 1,
-        pageSize: 20,
-      }, 'hmac');
-      if (itemData.success) {
-        const allActive = (itemData.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
-        const matched = allActive.filter(i => (i.outerId || '').toUpperCase().includes(skuUpper));
-        g = matched[0] || null;
-        if (g) outerId = g.outerId || '';
+    for (const qid of candidates) {
+      const data = await kuaimaiRequest('item.list.query', { outerId: qid, pageNo: 1, pageSize: 5 }, 'hmac');
+      if (!data.success) continue;
+      const valid = (data.items || []).filter(i => i.isSkuItem === 1 && i.activeStatus === 1);
+      if (valid.length) {
+        g = valid[0];
+        outerId = g.outerId || qid;
+        break;
       }
     }
 
-    if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号，请等待索引同步完成（约2分钟）' });
+    if (!g) return res.json({ found: false, message: '快麦未找到含"' + sku + '"的款号' });
 
     // Step 2: warehouse接口拿库存（用精确 outerId）
     let stockMap = {}; // skuOuterId -> stock
