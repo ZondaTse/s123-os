@@ -507,6 +507,24 @@ const Chat = {
   },
 
   // 查库存入口 — 弹出输入框
+  showScanMenu() {
+    const menu = document.getElementById('scan-menu');
+    if (!menu) return;
+    const isVisible = menu.style.display !== 'none';
+    menu.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) {
+      // 点外部关闭
+      setTimeout(() => {
+        document.addEventListener('click', function closeScan(e) {
+          if (!e.target.closest('#scan-menu') && !e.target.closest('#scan-top-btn')) {
+            menu.style.display = 'none';
+          }
+          document.removeEventListener('click', closeScan);
+        });
+      }, 50);
+    }
+  },
+
   showStockQuery() {
     this.closePlusMenu();
     const sku = window.prompt('输入款号查库存（如 4237）：');

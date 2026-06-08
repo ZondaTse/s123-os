@@ -48,6 +48,15 @@
 
   <!-- TAB 1: Chat -->
   <div class="page active" id="page-chat">
+    <!-- 右上角扫码按钮 -->
+    <button id="scan-top-btn" onclick="Chat.showScanMenu()" style="position:fixed;top:12px;right:16px;z-index:200;width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
+    </button>
+    <!-- 扫码菜单 -->
+    <div id="scan-menu" style="display:none;position:fixed;top:50px;right:12px;z-index:300;background:var(--card);border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.3);overflow:hidden;min-width:160px">
+      <div onclick="Chat.startScan();document.getElementById('scan-menu').style.display='none'" style="padding:16px 20px;font-size:16px;cursor:pointer;border-bottom:1px solid var(--sep)">📷 扫一扫</div>
+      <div onclick="Chat.showStockQuery();document.getElementById('scan-menu').style.display='none'" style="padding:16px 20px;font-size:16px;cursor:pointer">🔍 查库存</div>
+    </div>
     <div class="chat-wrap">
       <div class="chat-messages" id="chat-messages">
         <div class="loading"><div class="spinner"></div>加载消息...</div>
