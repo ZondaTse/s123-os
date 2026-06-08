@@ -716,6 +716,11 @@ body {
 .overlay.show .sheet {
   animation: iosSlideUp 0.28s cubic-bezier(.2,.8,.2,1) both;
 }
+/* 工资简报 sheet 需要 flex 布局撑满 iframe */
+#salary-overlay.show .sheet {
+  display: flex;
+  flex-direction: column;
+}
 .sheet {
   width: 100%;
   background: rgba(255,255,255,0.92);
