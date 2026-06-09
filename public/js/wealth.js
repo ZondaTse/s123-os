@@ -891,6 +891,10 @@ function sp_renderCards(filter) {
   const people = monthMeta[currentMonth].people;
   const container = document.getElementById('sp-grid-container');
   container.innerHTML = '';
+  // Force animation restart on re-render
+  container.style.animation = 'none';
+  void container.offsetHeight;
+  container.style.animation = '';
   const typeFilters = ['up','dn','neu','warn','high','low'];
   const isTypeFilter = typeFilters.includes(filter);
   let list = [...people].sort((a,b)=>deptOrder.indexOf(a.name)-deptOrder.indexOf(b.name));
@@ -1060,7 +1064,6 @@ function sp_openSheet(idx,list){
         '<div class="sheet-kpi" style="background:' + diffBg + '">' +
           '<div class="sheet-kpi-label" style="color:' + diffColor + '">环比</div>' +
           '<div class="sheet-kpi-val" style="color:' + diffColor + '">' + diffAmt + '</div>' +
-          '<div style="font-size:12px;font-weight:600;color:' + diffColor + ';margin-top:2px">' + diffPct + '</div>' +
         '</div>' +
       '</div>';
 
@@ -1677,9 +1680,9 @@ const My = {
 #salary-page .card {
   border-radius:14px; padding:13px 13px 12px;
   cursor:pointer;
-  transition:transform 0.15s, opacity 0.15s;
+  transition:transform 0.15s;
   box-shadow:var(--s-shadow);
-  opacity:0; animation:spFadeUp 0.22s ease forwards;
+  animation:spFadeUp 0.2s ease both;
 }
 .card:active { transform:scale(0.95); }
 #salary-page .card.tapped { transform:scale(0.95); }
@@ -1733,7 +1736,7 @@ const My = {
   min-height:72px;
 }
 #salary-page .sheet-kpi-label { font-size:11px; color:var(--s-fg4); margin-bottom:4px; }
-#salary-page .sheet-kpi-val { font-size:28px; font-weight:700; letter-spacing:-0.5px; }
+#salary-page .sheet-kpi-val { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
 #salary-page .sheet-kpi-sub { font-size:13px; font-weight:600; margin-top:3px; }
 #salary-page .reason-sec {
   background:var(--s-panel-bg);
