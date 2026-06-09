@@ -1427,12 +1427,13 @@ const My = {
     const mod = _buildSalaryModule();
     window._salaryMod = mod;
     // 用requestAnimationFrame确保innerHTML已渲染到DOM再执行
-    requestAnimationFrame(() => {
+    // 双帧确保innerHTML完全渲染后再执行
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       mod.renderMonthNav();
       mod.renderKPI();
       mod.renderSummary();
       mod.renderCards('all');
-    });
+    }));
   },
 
   closeSalary() {
