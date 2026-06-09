@@ -672,7 +672,7 @@ const peopleMay = [
   {name:'孔敏怡',dept:'运营',may:5050,apr:5050,type:'neu',reason:'底薪+补贴+全勤，与上月完全一致。',bars:[{n:'底薪',may:4900,apr:4900},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
   {name:'伍华彩',dept:'美工',may:6700,apr:6910,type:'dn',reason:'上月加班按1天折算¥260，本月改按实际小时，2.5小时仅¥50，差额¥210。',bars:[{n:'底薪',may:6500,apr:6500},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:50,apr:260},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
   {name:'赵姗姗',dept:'美工',may:6970,apr:7118,type:'dn',reason:'上月加班按1天折算¥268，本月改按小时，6小时计¥120，差额¥148。',bars:[{n:'底薪',may:6700,apr:6700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:120,apr:268},{n:'提成',may:0,apr:0},{n:'社保',may:-650,apr:-650}]},
-  {name:'赵佳琪',dept:'客服',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:5850,apr:5850,type:ZHAO_JIAQING_MATERNITY_LEAVE?'neu':'neu',reason:ZHAO_JIAQING_MATERNITY_LEAVE?'产假停发（开关：ZHAO_JIAQING_MATERNITY_LEAVE）':'产假期间，按固定标准发放。',bars:[{n:'底薪',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:5700,apr:5700},{n:'补贴',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:500,apr:500},{n:'全勤',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:300,apr:300},{n:'社保',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:-650,apr:-650}]},
+  {name:'赵佳琪',dept:'客服',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:5850,apr:5850,type:ZHAO_JIAQING_MATERNITY_LEAVE?'neu':'neu',reason:ZHAO_JIAQING_MATERNITY_LEAVE?'产假期间停发工资。':'产假期间，按固定标准发放。',bars:[{n:'底薪',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:5700,apr:5700},{n:'补贴',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:500,apr:500},{n:'全勤',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:300,apr:300},{n:'社保',may:ZHAO_JIAQING_MATERNITY_LEAVE?0:-650,apr:-650}]},
   {name:'莫翠玲',dept:'阳江客服',may:8200,apr:8200,type:'neu',reason:'居家办公，固定薪资，无全勤奖。',bars:[{n:'底薪',may:8200,apr:8200},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
   {name:'莫碧君',dept:'阳江客服',may:8200,apr:8200,type:'neu',reason:'居家办公，固定薪资，无全勤奖。',bars:[{n:'底薪',may:8200,apr:8200},{n:'补贴',may:0,apr:0},{n:'全勤',may:0,apr:0},{n:'加班',may:0,apr:0},{n:'提成',may:0,apr:0},{n:'社保',may:0,apr:0}]},
   {name:'陈嘉仪',dept:'阳江客服',may:7020,apr:7422,type:'dn',reason:'上月有1.5天加班费¥402，本月加班仅0.5小时未计入，差额¥402。',bars:[{n:'底薪',may:6700,apr:6700},{n:'补贴',may:500,apr:500},{n:'全勤',may:300,apr:300},{n:'加班',may:0,apr:402},{n:'提成',may:0,apr:0},{n:'社保',may:-480,apr:-480}]},
@@ -1018,10 +1018,10 @@ function sp_openSheet(idx,list){
         <div class="sheet-kpi-label" style="color:${mayColor}">本月实发</div>
         <div class="sheet-kpi-val" style="color:${mayColor}">¥${sp_fmt(p.may)}</div>
       </div>
-      <div class="sheet-kpi" style="background:${diff==null?'var(--s-bg3)':diff>0?'var(--s-tint-red)':diff<0?'var(--s-tint-green)':'var(--s-bg3)'}">
-        <div class="sheet-kpi-label" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">环比</div>
-        <div class="sheet-kpi-sub" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
-        <div class="sheet-kpi-val" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+      <div class="sheet-kpi" style="background:var(--s-bg3)">
+        <div class="sheet-kpi-label" style="color:var(--s-fg4)">环比</div>
+        <div class="sheet-kpi-sub" style="color:var(--s-fg4)">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
+        <div class="sheet-kpi-val" style="color:var(--s-fg4)">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
       </div>
     </div>`;
 
