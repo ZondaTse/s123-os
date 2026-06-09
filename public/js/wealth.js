@@ -963,6 +963,7 @@ function sp_makeCard(p,i,list){
   const aprLine = hasApr ? `<div class="card-apr">上月 ¥${sp_fmt(p.apr)}</div>` : '';
   const card = document.createElement('div');
   card.className = `card ${bgClass}`;
+  card.style.animationDelay = (i * 30) + 'ms';
   const rule = (typeof SALARY_RULES !== 'undefined' && SALARY_RULES[p.name]) || '';
   card.innerHTML = `
     <div class="card-top">
@@ -1472,7 +1473,349 @@ const My = {
     if (!document.getElementById('sp-styles')) {
       const st = document.createElement('style');
       st.id = 'sp-styles';
-      st.textContent = "\n/* \u2500\u2500 CSS VARIABLES \u2014 light / dark \u2500\u2500 */\n:root {\n  --s-bg:           #f2f2f7;\n  --s-bg2:          #ffffff;\n  --s-bg3:          #e5e5ea;\n  --s-bg4:          #d1d1d6;\n  --s-fg:           #1c1c1e;\n  --s-fg2:          #3a3a3c;\n  --s-fg3:          #636366;\n  --s-fg4:          #8e8e93;\n  --s-fg5:          #aeaeb2;\n  --s-sep:          rgba(0,0,0,0.08);\n  --s-shadow:       0 1px 4px rgba(0,0,0,0.07);\n  --s-shadow-lg:    0 4px 20px rgba(0,0,0,0.10);\n  --s-nav-bg:       rgba(242,242,247,0.88);\n  --s-sheet-bg:     #f2f2f7;\n  --s-overlay-bg:   rgba(0,0,0,0.28);\n  --s-handle:       rgba(0,0,0,0.15);\n  --s-close-btn:    rgba(0,122,255,0.92);\n\n  /* accent \u2014 light mode: standard iOS */\n  --s-red:    #ff3b30;\n  --s-green:  #34c759;\n  --s-blue:   #007aff;\n  --s-blue2:  #5b9fd6;\n  --s-orange: #ff9500;\n\n  /* accent bg tints \u2014 light: soft pastels */\n  --s-tint-red:    #fff0f0;\n  --s-tint-green:  #f0fff4;\n  --s-tint-blue:   #e8f2fb;\n  --s-tint-orange: rgba(255,149,0,0.10);\n\n  /* tag bg \u2014 light */\n  --s-tag-up-bg:  #fff0f0;\n  --s-tag-dn-bg:  #f0fff4;\n  --s-tag-neu-bg: #e8f2fb;\n\n  /* numrow separator */\n  --s-numrow-sep: rgba(0,0,0,0.07);\n\n  /* dept card backgrounds \u2014 light: soft pastels */\n  --dept-lavender: #ede8f5;\n  --dept-sage:     #e8f0e4;\n  --dept-sky:      #e4eef8;\n  --dept-sand:     #f5efe6;\n  --dept-lilac:    #ede8f5;\n  --dept-mint:     #e4f2ed;\n  --dept-stone:    #fde8ee;\n  --dept-ice:      #e6f0f5;\n\n  /* group banner bg \u2014 light: richer tint */\n  --banner-lavender: #ddd5f2;\n  --banner-sage:     #cddfc5;\n  --banner-sky:      #c5d9ef;\n  --banner-sand:     #e8d8c2;\n  --banner-lilac:    #ddd5f2;\n  --banner-mint:     #bfe0d4;\n  --banner-stone:    #f2dce0;\n  --banner-ice:      #c5dceb;\n\n  /* group banner border \u2014 light */\n  --border-lavender: #9980cc;\n  --border-sage:     #6aa062;\n  --border-sky:      #5090c8;\n  --border-sand:     #b09060;\n  --border-lilac:    #9980cc;\n  --border-mint:     #50a888;\n  --border-stone:    #c8a0a8;\n  --border-ice:      #5090b0;\n\n  /* reason/chart panel */\n  --s-panel-bg: rgba(255,255,255,0.65);\n\n  /* KPI */\n  --s-kpi-prev-bg: #e8f2fb;\n  --s-kpi-prev-fg: #5b9fd6;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    --s-bg:           #000000;\n    --s-bg2:          #1c1c1e;\n    --s-bg3:          #2c2c2e;\n    --s-bg4:          #3a3a3c;\n    --s-fg:           #ffffff;\n    --s-fg2:          #ebebf5;\n    --s-fg3:          #aeaeb2;\n    --s-fg4:          #636366;\n    --s-fg5:          #48484a;\n    --s-sep:          rgba(255,255,255,0.08);\n    --s-shadow:       0 1px 0 rgba(255,255,255,0.04);\n    --s-shadow-lg:    0 4px 20px rgba(0,0,0,0.5);\n    --s-nav-bg:       rgba(0,0,0,0.85);\n    --s-sheet-bg:     #1c1c1e;\n    --s-overlay-bg:   rgba(0,0,0,0.55);\n    --s-handle:       rgba(255,255,255,0.18);\n    --s-close-btn:    #0a84ff;\n\n    /* accent \u2014 dark mode: brighter iOS variants */\n    --s-red:    #ff453a;\n    --s-green:  #30d158;\n    --s-blue:   #0a84ff;\n    --s-blue2:  #409cff;\n    --s-orange: #ff9f0a;\n\n    /* accent bg tints \u2014 dark: very subtle, nearly invisible */\n    --s-tint-red:    rgba(255,69,58,0.15);\n    --s-tint-green:  rgba(48,209,88,0.12);\n    --s-tint-blue:   rgba(10,132,255,0.15);\n    --s-tint-orange: rgba(255,159,10,0.12);\n\n    /* tag bg \u2014 dark */\n    --s-tag-up-bg:  rgba(255,69,58,0.18);\n    --s-tag-dn-bg:  rgba(48,209,88,0.15);\n    --s-tag-neu-bg: rgba(10,132,255,0.18);\n\n    /* numrow separator */\n    --s-numrow-sep: rgba(255,255,255,0.07);\n\n    /* dept card backgrounds \u2014 dark: all just slightly lighter than bg2 */\n    /* No saturated colors \u2014 subtle elevation only */\n    --dept-lavender: #28252e;\n    --dept-sage:     #22282a;\n    --dept-sky:      #1e2530;\n    --dept-sand:     #2a2620;\n    --dept-lilac:    #28252e;\n    --dept-mint:     #1e2a26;\n    --dept-stone:    #2a2028;\n    --dept-ice:      #1e252a;\n\n    /* group banner bg \u2014 dark: same as dept but slightly stronger */\n    --banner-lavender: #312d3a;\n    --banner-sage:     #293030;\n    --banner-sky:      #243040;\n    --banner-sand:     #332e26;\n    --banner-lilac:    #312d3a;\n    --banner-mint:     #253430;\n    --banner-stone:    #342830;\n    --banner-ice:      #243038;\n\n    /* group banner border \u2014 dark: muted, no saturation */\n    --border-lavender: #48405a;\n    --border-sage:     #3a4a3e;\n    --border-sky:      #304858;\n    --border-sand:     #4a4034;\n    --border-lilac:    #48405a;\n    --border-mint:     #305048;\n    --border-stone:    #4a3840;\n    --border-ice:      #2e4458;\n\n    /* reason/chart panel */\n    --s-panel-bg: rgba(44,44,46,0.9);\n\n    /* KPI */\n    --s-kpi-prev-bg: rgba(64,156,255,0.12);\n    --s-kpi-prev-fg: #409cff;\n  }\n}\n\n* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }\n#salary-page body {\n  font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;\n  background:var(--s-bg); color:var(--s-fg);\n  min-height:100vh; padding-bottom:40px;\n}\n\n/* \u2500\u2500 MONTH NAV BAR \u2500\u2500 */\n#salary-page .month-nav {\n  display:flex; align-items:center;\n  padding:14px 16px 6px; gap:8px;\n  overflow-x:auto; scrollbar-width:none;\n}\n.month-nav::-webkit-scrollbar { display:none; }\n#salary-page .month-chip {\n  flex-shrink:0; padding:7px 18px; border-radius:20px;\n  font-size:14px; font-weight:600;\n  background:var(--s-bg3); color:var(--s-fg2);\n  cursor:pointer; border:none; font-family:inherit;\n  transition:all 0.18s;\n}\n#salary-page .month-chip.active { background:var(--s-blue); color:#fff; }\n\n/* KPI */\n#salary-page .kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:14px 16px; }\n#salary-page .kpi {\n  border-radius:14px; padding:14px 12px 16px;\n  min-height:80px; display:flex; flex-direction:column;\n  justify-content:space-between;\n  cursor:pointer; transition:transform 0.15s;\n}\n.kpi:active { transform:scale(0.95); }\n#salary-page .kpi-label { font-size:12px; color:var(--s-fg4); margin-bottom:6px; }\n#salary-page .kpi-val { font-size:22px; font-weight:700; letter-spacing:-0.5px; }\n#salary-page .kpi-tap-hint { font-size:10px; color:var(--s-fg4); margin-top:3px; }\n\n/* TABS */\n#salary-page .tabs { display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto; scrollbar-width:none; }\n.tabs::-webkit-scrollbar { display:none; }\n#salary-page .tab {\\n  flex-shrink:0; padding:6px 14px; border-radius:20px;\\n  font-size:13px; font-weight:500;\\n  background:var(--s-bg3); color:var(--s-fg2);\\n  cursor:pointer; border:none; font-family:inherit;\\n}\n#salary-page .tab.active { background:var(--s-blue); color:#fff; }\n\n/* summary card */\n#salary-page .summary-card {\n  margin:0 16px 12px;\n  background:var(--s-bg2);\n  border-radius:14px; padding:14px 16px;\n  box-shadow:var(--s-shadow);\n}\n#salary-page .summary-title { font-size:18px; font-weight:700; color:var(--s-fg); margin-bottom:8px; }\n#salary-page .summary-text { font-size:15px; color:var(--s-fg2); line-height:1.65; }\n\n/* GRID */\n#salary-page .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }\n#salary-page .group-wrap { margin:16px 16px 6px; }\n#salary-page .group-tab {\n  display:inline-flex; align-items:center; justify-content:space-between;\n  border-radius:12px 12px 0 0; padding:8px 14px 10px;\n  width:100%; border-bottom:none;\n}\n#salary-page .group-body { border-radius:0 0 16px 16px; padding:10px; }\n#salary-page .group-banner-name { font-size:16px; font-weight:700; color:var(--s-fg); }\n#salary-page .group-banner-right { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }\n#salary-page .group-banner-arrow { color:var(--s-fg4); font-size:12px; }\n#salary-page .group-banner-diff { font-size:15px; font-weight:700; }\n#salary-page .group-banner-label { font-size:15px; font-weight:700; }\n\n/* CARD */\n#salary-page .card {\n  border-radius:14px; padding:13px 13px 12px;\n  cursor:pointer;\n  transition:transform 0.15s;\n  box-shadow:var(--s-shadow);\n  will-change:transform;\n}\n.card:active { transform:scale(0.95); box-shadow:var(--s-shadow-lg); transition:transform 0.15s; }\n#salary-page .card.tapped { transform:scale(0.95); }\n}\n#salary-page .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }\n#salary-page .card-name { font-size:18px; font-weight:700; color:var(--s-fg); }\n#salary-page .card-dept-label { font-size:11px; color:var(--s-fg4); margin-top:2px; }\n#salary-page .card-right { text-align:right; }\n#salary-page .card-may { font-size:18px; font-weight:700; }\n#salary-page .card-may.may-up { color:var(--s-red); }\n#salary-page .card-may.may-dn { color:var(--s-green); }\n#salary-page .card-may.may-neu { color:var(--s-fg); }\n#salary-page .diff-up { font-size:13px; font-weight:600; color:var(--s-red);   margin-top:1px; }\n#salary-page .diff-dn { font-size:13px; font-weight:600; color:var(--s-green); margin-top:1px; }\n#salary-page .diff-neu { font-size:13px; font-weight:600; color:var(--s-fg4);   margin-top:1px; }\n#salary-page .card-apr { font-size:12px; color:var(--s-blue2); margin-top:1px; }\n#salary-page .card-reason { font-size:11px; color:var(--s-fg3);  line-height:1.55; margin-top:6px; }\n#salary-page .card-rule { font-size:10px; color:var(--s-fg4); line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }\n#salary-page .warn-dot { width:7px; height:7px; border-radius:50%; background:var(--s-orange); display:inline-block; margin-left:4px; vertical-align:middle; }\n\n/* dept card backgrounds \u2014 CSS vars, auto dark */\n#salary-page .bg-lavender { background:var(--dept-lavender); }\n#salary-page .bg-sage { background:var(--dept-sage); }\n#salary-page .bg-sky { background:var(--dept-sky); }\n#salary-page .bg-sand { background:var(--dept-sand); }\n#salary-page .bg-lilac { background:var(--dept-lilac); }\n#salary-page .bg-mint { background:var(--dept-mint); }\n#salary-page .bg-stone { background:var(--dept-stone); }\n#salary-page .bg-ice { background:var(--dept-ice); }\n\n/* OVERLAY \u2014 person detail sheet */\n#salary-page .overlay {\n  position:fixed; inset:0; z-index:100;\n  background:var(--s-overlay-bg);\n  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);\n  display:flex; align-items:flex-end;\n  opacity:0; pointer-events:none; transition:opacity 0.25s;\n}\n#salary-page .overlay.show { opacity:1; pointer-events:all; }\n#salary-page .sheet {\n  width:100%; max-height:96vh; border-radius:20px 20px 0 0;\n  overflow-y:auto;\n  transform:translateY(100%);\n  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);\n  padding-bottom:32px;\n}\n#salary-page .overlay.show .sheet { transform:translateY(0); }\n#salary-page .sheet-handle { width:36px; height:5px; background:var(--s-handle); border-radius:3px; margin:12px auto 0; }\n#salary-page .sheet-top { padding:0; }\n#salary-page .sheet-name { font-size:20px; font-weight:700; margin-bottom:0; color:var(--s-fg); }\n#salary-page .sheet-kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:6px 16px 0; }\n#salary-page .sheet-kpi {\n  border-radius:12px; padding:14px 12px 16px;\n  display:flex; flex-direction:column; justify-content:space-between;\n  min-height:72px;\n}\n#salary-page .sheet-kpi-label { font-size:11px; color:var(--s-fg4); margin-bottom:4px; }\n#salary-page .sheet-kpi-val { font-size:28px; font-weight:700; letter-spacing:-0.5px; }\n#salary-page .sheet-kpi-sub { font-size:13px; font-weight:600; margin-top:3px; }\n\n#salary-page .reason-sec {\n  background:var(--s-panel-bg);\n  margin:10px 16px; border-radius:14px; padding:14px 16px;\n}\n#salary-page .reason-sec-title { font-size:13px; font-weight:600; color:var(--s-fg4); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em; }\n#salary-page .reason-text { font-size:16px; color:var(--s-fg); line-height:1.65; }\n#salary-page .pending-box {\n  background:var(--s-tint-orange); border-radius:10px;\n  padding:8px 12px; font-size:13px; color:var(--s-orange);\n  line-height:1.6; border-left:3px solid var(--s-orange); margin-top:8px;\n}\n#salary-page .chart-sec {\n  background:var(--s-panel-bg);\n  margin:0 16px 10px; border-radius:14px; padding:14px 16px 16px;\n}\n#salary-page .chart-title { font-size:12px; font-weight:600; color:var(--s-fg4); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.04em; }\n\n#salary-page .numrow { display:flex; align-items:center; padding:9px 0; border-bottom:0.5px solid var(--s-numrow-sep); }\n.numrow:last-child { border-bottom:none; }\n#salary-page .numrow-name { font-size:14px; font-weight:600; color:var(--s-fg2); width:36px; flex-shrink:0; }\n#salary-page .numrow-apr { font-size:15px; font-weight:600; color:var(--s-blue2); flex:1; text-align:right; }\n#salary-page .numrow-arrow { font-size:13px; color:var(--s-fg4); padding:0 8px; flex-shrink:0; }\n#salary-page .numrow-may { font-size:15px; font-weight:700; flex:1; text-align:left; }\n#salary-page .numrow-may.up { color:var(--s-red); }\n#salary-page .numrow-may.dn { color:var(--s-green); }\n#salary-page .numrow-may.neu { color:var(--s-blue2); }\n#salary-page .numrow-may.neg { color:var(--s-red); }\n#salary-page .numrow-tag { font-size:11px; font-weight:600; padding:2px 6px; border-radius:6px; flex-shrink:0; }\n#salary-page .numrow-tag.up { background:var(--s-tag-up-bg);  color:var(--s-red); }\n#salary-page .numrow-tag.dn { background:var(--s-tag-dn-bg);  color:var(--s-green); }\n#salary-page .numrow-tag.neu { background:var(--s-tag-neu-bg); color:var(--s-blue2); }\n#salary-page .numrow-tag.neg { background:var(--s-tag-up-bg);  color:var(--s-red); }\n\n#salary-page .close-btn {\n  display:block; width:calc(100% - 32px);\n  margin:10px 16px 0; padding:15px; border-radius:14px;\n  background:var(--s-close-btn); color:#fff;\n  font-size:16px; font-weight:600; font-family:inherit; border:none; cursor:pointer;\n}\n\n#salary-page .pending-footer {\n  margin:14px 16px 0; background:var(--s-tint-orange);\n  border-radius:14px; padding:13px 16px;\n  border:0.5px solid rgba(255,149,0,0.35);\n}\n#salary-page .pending-footer-title { font-size:13px; font-weight:700; color:var(--s-orange); margin-bottom:6px; }\n#salary-page .pending-footer-item { font-size:13px; color:var(--s-fg3); line-height:1.9; }\n\n/* \u2500\u2500 YEAR CALENDAR OVERLAY \u2500\u2500 */\n#salary-page .cal-overlay {\n  position:fixed; inset:0; z-index:200;\n  background:var(--s-overlay-bg);\n  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);\n  display:flex; align-items:flex-end;\n  opacity:0; pointer-events:none; transition:opacity 0.25s;\n}\n#salary-page .cal-overlay.show { opacity:1; pointer-events:all; }\n#salary-page .cal-sheet {\n  width:100%; border-radius:24px 24px 0 0;\n  background:var(--s-sheet-bg);\n  transform:translateY(100%);\n  transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);\n  padding-bottom:36px; max-height:80vh; overflow-y:auto;\n}\n#salary-page .cal-overlay.show .cal-sheet { transform:translateY(0); }\n#salary-page .cal-handle { width:36px; height:5px; background:var(--s-handle); border-radius:3px; margin:12px auto 8px; }\n#salary-page .cal-header { padding:4px 20px 16px; }\n#salary-page .cal-year { font-size:28px; font-weight:700; color:var(--s-fg); }\n#salary-page .cal-subtitle { font-size:14px; color:var(--s-fg4); margin-top:2px; }\n#salary-page .cal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px; }\n#salary-page .cal-cell {\n  border-radius:16px; padding:14px 12px 16px;\n  display:flex; flex-direction:column;\n  min-height:72px; position:relative; transition:transform 0.15s;\n}\n#salary-page .cal-cell.has-data { cursor:pointer; }\n.cal-cell.has-data:active { transform:scale(0.94); }\n#salary-page .cal-cell.empty { background:var(--s-bg3); opacity:0.5; }\n#salary-page .cal-cell.active-month { box-shadow:0 0 0 2.5px var(--s-blue); }\n#salary-page .cal-month-name { font-size:13px; font-weight:600; margin-bottom:6px; }\n#salary-page .cal-total { font-size:20px; font-weight:700; letter-spacing:-0.5px; margin-top:auto; }\n#salary-page .cal-diff { font-size:11px; font-weight:600; margin-top:3px; }\n#salary-page .cal-empty-label { font-size:12px; color:var(--s-fg4); margin-top:auto; }\n#salary-page .cal-dot { width:6px; height:6px; border-radius:50%; background:var(--s-blue); position:absolute; top:10px; right:10px; }\n";
+      st.textContent = `
+/* ── CSS VARIABLES — light / dark ── */
+:root {
+  --s-bg:           #f2f2f7;
+  --s-bg2:          #ffffff;
+  --s-bg3:          #e5e5ea;
+  --s-bg4:          #d1d1d6;
+  --s-fg:           #1c1c1e;
+  --s-fg2:          #3a3a3c;
+  --s-fg3:          #636366;
+  --s-fg4:          #8e8e93;
+  --s-fg5:          #aeaeb2;
+  --s-sep:          rgba(0,0,0,0.08);
+  --s-shadow:       0 1px 4px rgba(0,0,0,0.07);
+  --s-shadow-lg:    0 4px 20px rgba(0,0,0,0.10);
+  --s-nav-bg:       rgba(242,242,247,0.88);
+  --s-sheet-bg:     #f2f2f7;
+  --s-overlay-bg:   rgba(0,0,0,0.28);
+  --s-handle:       rgba(0,0,0,0.15);
+  --s-close-btn:    rgba(0,122,255,0.92);
+  --s-red:    #ff3b30;
+  --s-green:  #34c759;
+  --s-blue:   #007aff;
+  --s-blue2:  #5b9fd6;
+  --s-orange: #ff9500;
+  --s-tint-red:    #fff0f0;
+  --s-tint-green:  #f0fff4;
+  --s-tint-blue:   #e8f2fb;
+  --s-tint-orange: rgba(255,149,0,0.10);
+  --s-tag-up-bg:  #fff0f0;
+  --s-tag-dn-bg:  #f0fff4;
+  --s-tag-neu-bg: #e8f2fb;
+  --s-numrow-sep: rgba(0,0,0,0.07);
+  --dept-lavender: #ede8f5;
+  --dept-sage:     #e8f0e4;
+  --dept-sky:      #e4eef8;
+  --dept-sand:     #f5efe6;
+  --dept-lilac:    #ede8f5;
+  --dept-mint:     #e4f2ed;
+  --dept-stone:    #fde8ee;
+  --dept-ice:      #e6f0f5;
+  --banner-lavender: #ddd5f2;
+  --banner-sage:     #cddfc5;
+  --banner-sky:      #c5d9ef;
+  --banner-sand:     #e8d8c2;
+  --banner-lilac:    #ddd5f2;
+  --banner-mint:     #bfe0d4;
+  --banner-stone:    #f2dce0;
+  --banner-ice:      #c5dceb;
+  --border-lavender: #9980cc;
+  --border-sage:     #6aa062;
+  --border-sky:      #5090c8;
+  --border-sand:     #b09060;
+  --border-lilac:    #9980cc;
+  --border-mint:     #50a888;
+  --border-stone:    #c8a0a8;
+  --border-ice:      #5090b0;
+  --s-panel-bg: rgba(255,255,255,0.65);
+  --s-kpi-prev-bg: #e8f2fb;
+  --s-kpi-prev-fg: #5b9fd6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --s-bg:           #000000;
+    --s-bg2:          #1c1c1e;
+    --s-bg3:          #2c2c2e;
+    --s-bg4:          #3a3a3c;
+    --s-fg:           #ffffff;
+    --s-fg2:          #ebebf5;
+    --s-fg3:          #aeaeb2;
+    --s-fg4:          #636366;
+    --s-fg5:          #48484a;
+    --s-sep:          rgba(255,255,255,0.08);
+    --s-shadow:       0 1px 0 rgba(255,255,255,0.04);
+    --s-shadow-lg:    0 4px 20px rgba(0,0,0,0.5);
+    --s-nav-bg:       rgba(0,0,0,0.85);
+    --s-sheet-bg:     #1c1c1e;
+    --s-overlay-bg:   rgba(0,0,0,0.55);
+    --s-handle:       rgba(255,255,255,0.18);
+    --s-close-btn:    #0a84ff;
+    --s-red:    #ff453a;
+    --s-green:  #30d158;
+    --s-blue:   #0a84ff;
+    --s-blue2:  #409cff;
+    --s-orange: #ff9f0a;
+    --s-tint-red:    rgba(255,69,58,0.15);
+    --s-tint-green:  rgba(48,209,88,0.12);
+    --s-tint-blue:   rgba(10,132,255,0.15);
+    --s-tint-orange: rgba(255,159,10,0.12);
+    --s-tag-up-bg:  rgba(255,69,58,0.18);
+    --s-tag-dn-bg:  rgba(48,209,88,0.15);
+    --s-tag-neu-bg: rgba(10,132,255,0.18);
+    --s-numrow-sep: rgba(255,255,255,0.07);
+    --dept-lavender: #28252e;
+    --dept-sage:     #22282a;
+    --dept-sky:      #1e2530;
+    --dept-sand:     #2a2620;
+    --dept-lilac:    #28252e;
+    --dept-mint:     #1e2a26;
+    --dept-stone:    #2a2028;
+    --dept-ice:      #1e252a;
+    --banner-lavender: #312d3a;
+    --banner-sage:     #293030;
+    --banner-sky:      #243040;
+    --banner-sand:     #332e26;
+    --banner-lilac:    #312d3a;
+    --banner-mint:     #253430;
+    --banner-stone:    #342830;
+    --banner-ice:      #243038;
+    --border-lavender: #48405a;
+    --border-sage:     #3a4a3e;
+    --border-sky:      #304858;
+    --border-sand:     #4a4034;
+    --border-lilac:    #48405a;
+    --border-mint:     #305048;
+    --border-stone:    #4a3840;
+    --border-ice:      #2e4458;
+    --s-panel-bg: rgba(44,44,46,0.9);
+    --s-kpi-prev-bg: rgba(64,156,255,0.12);
+    --s-kpi-prev-fg: #409cff;
+  }
+}
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+#salary-page body {
+  font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;
+  background:var(--s-bg); color:var(--s-fg);
+  min-height:100vh; padding-bottom:40px;
+}
+/* ── MONTH NAV BAR ── */
+#salary-page .month-nav {
+  display:flex; align-items:center;
+  padding:14px 16px 6px; gap:8px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.month-nav::-webkit-scrollbar { display:none; }
+#salary-page .month-chip {
+  flex-shrink:0; padding:7px 18px; border-radius:20px;
+  font-size:14px; font-weight:600;
+  background:var(--s-bg3); color:var(--s-fg2);
+  cursor:pointer; border:none; font-family:inherit;
+  transition:all 0.18s;
+}
+#salary-page .month-chip.active { background:var(--s-blue); color:#fff; }
+/* KPI */
+#salary-page .kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:14px 16px; }
+#salary-page .kpi {
+  border-radius:14px; padding:14px 12px 16px;
+  min-height:80px; display:flex; flex-direction:column;
+  justify-content:space-between;
+  cursor:pointer; transition:transform 0.15s, opacity 0.15s;
+  opacity:0; animation:spFadeUp 0.22s ease forwards;
+}
+#salary-page .kpi:nth-child(1) { animation-delay:0ms; }
+#salary-page .kpi:nth-child(2) { animation-delay:40ms; }
+#salary-page .kpi:nth-child(3) { animation-delay:80ms; }
+.kpi:active { transform:scale(0.95); }
+#salary-page .kpi-label { font-size:12px; color:var(--s-fg4); margin-bottom:6px; }
+#salary-page .kpi-val { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+#salary-page .kpi-tap-hint { font-size:10px; color:var(--s-fg4); margin-top:3px; }
+@keyframes spFadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+/* TABS */
+#salary-page .tabs {
+  display:flex; gap:8px; padding:0 16px 12px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+#salary-page .tab {
+  flex-shrink:0; padding:6px 14px; border-radius:20px;
+  font-size:13px; font-weight:500;
+  background:var(--s-bg3); color:var(--s-fg2);
+  cursor:pointer; border:none; font-family:inherit;
+  white-space:nowrap;
+}
+#salary-page .tab.active { background:var(--s-blue); color:#fff; }
+/* summary card */
+#salary-page .summary-card {
+  margin:0 16px 12px;
+  background:var(--s-bg2);
+  border-radius:14px; padding:14px 16px;
+  box-shadow:var(--s-shadow);
+}
+#salary-page .summary-title { font-size:18px; font-weight:700; color:var(--s-fg); margin-bottom:8px; }
+#salary-page .summary-text { font-size:15px; color:var(--s-fg2); line-height:1.65; }
+/* GRID */
+#salary-page .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#salary-page .group-wrap { margin:16px 16px 6px; }
+#salary-page .group-tab {
+  display:inline-flex; align-items:center; justify-content:space-between;
+  border-radius:12px 12px 0 0; padding:8px 14px 10px;
+  width:100%; border-bottom:none;
+}
+#salary-page .group-body { border-radius:0 0 16px 16px; padding:10px; }
+#salary-page .group-banner-name { font-size:16px; font-weight:700; color:var(--s-fg); }
+#salary-page .group-banner-right { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+#salary-page .group-banner-arrow { color:var(--s-fg4); font-size:12px; }
+#salary-page .group-banner-diff { font-size:15px; font-weight:700; }
+#salary-page .group-banner-label { font-size:15px; font-weight:700; }
+/* CARD */
+#salary-page .card {
+  border-radius:14px; padding:13px 13px 12px;
+  cursor:pointer;
+  transition:transform 0.15s, opacity 0.15s;
+  box-shadow:var(--s-shadow);
+  opacity:0; animation:spFadeUp 0.22s ease forwards;
+}
+.card:active { transform:scale(0.95); }
+#salary-page .card.tapped { transform:scale(0.95); }
+#salary-page .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+#salary-page .card-name { font-size:18px; font-weight:700; color:var(--s-fg); }
+#salary-page .card-dept-label { font-size:11px; color:var(--s-fg4); margin-top:2px; }
+#salary-page .card-right { text-align:right; }
+#salary-page .card-may { font-size:18px; font-weight:700; }
+#salary-page .card-may.may-up { color:var(--s-red); }
+#salary-page .card-may.may-dn { color:var(--s-green); }
+#salary-page .card-may.may-neu { color:var(--s-fg); }
+#salary-page .diff-up { font-size:13px; font-weight:600; color:var(--s-red);   margin-top:1px; }
+#salary-page .diff-dn { font-size:13px; font-weight:600; color:var(--s-green); margin-top:1px; }
+#salary-page .diff-neu { font-size:13px; font-weight:600; color:var(--s-fg4);  margin-top:1px; }
+#salary-page .card-apr { font-size:12px; color:var(--s-blue2); margin-top:1px; }
+#salary-page .card-reason { font-size:11px; color:var(--s-fg3); line-height:1.55; margin-top:6px; }
+#salary-page .card-rule { font-size:10px; color:var(--s-fg4); line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+#salary-page .warn-dot { width:7px; height:7px; border-radius:50%; background:var(--s-orange); display:inline-block; margin-left:4px; vertical-align:middle; }
+#salary-page .bg-lavender { background:var(--dept-lavender); }
+#salary-page .bg-sage { background:var(--dept-sage); }
+#salary-page .bg-sky { background:var(--dept-sky); }
+#salary-page .bg-sand { background:var(--dept-sand); }
+#salary-page .bg-lilac { background:var(--dept-lilac); }
+#salary-page .bg-mint { background:var(--dept-mint); }
+#salary-page .bg-stone { background:var(--dept-stone); }
+#salary-page .bg-ice { background:var(--dept-ice); }
+/* OVERLAY */
+#salary-page .overlay {
+  position:fixed; inset:0; z-index:100;
+  background:var(--s-overlay-bg);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity 0.25s;
+}
+#salary-page .overlay.show { opacity:1; pointer-events:all; }
+#salary-page .sheet {
+  width:100%; max-height:96vh; border-radius:20px 20px 0 0;
+  overflow-y:auto;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:32px;
+}
+#salary-page .overlay.show .sheet { transform:translateY(0); }
+#salary-page .sheet-handle { width:36px; height:5px; background:var(--s-handle); border-radius:3px; margin:12px auto 0; }
+#salary-page .sheet-top { padding:0; }
+#salary-page .sheet-name { font-size:20px; font-weight:700; margin-bottom:0; color:var(--s-fg); }
+#salary-page .sheet-kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:6px 16px 0; }
+#salary-page .sheet-kpi {
+  border-radius:12px; padding:14px 12px 16px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  min-height:72px;
+}
+#salary-page .sheet-kpi-label { font-size:11px; color:var(--s-fg4); margin-bottom:4px; }
+#salary-page .sheet-kpi-val { font-size:28px; font-weight:700; letter-spacing:-0.5px; }
+#salary-page .sheet-kpi-sub { font-size:13px; font-weight:600; margin-top:3px; }
+#salary-page .reason-sec {
+  background:var(--s-panel-bg);
+  margin:10px 16px; border-radius:14px; padding:14px 16px;
+}
+#salary-page .reason-sec-title { font-size:13px; font-weight:600; color:var(--s-fg4); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em; }
+#salary-page .reason-text { font-size:16px; color:var(--s-fg); line-height:1.65; }
+#salary-page .pending-box {
+  background:var(--s-tint-orange); border-radius:10px;
+  padding:8px 12px; font-size:13px; color:var(--s-orange);
+  line-height:1.6; border-left:3px solid var(--s-orange); margin-top:8px;
+}
+#salary-page .chart-sec {
+  background:var(--s-panel-bg);
+  margin:0 16px 10px; border-radius:14px; padding:14px 16px 16px;
+}
+#salary-page .chart-title { font-size:12px; font-weight:600; color:var(--s-fg4); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.04em; }
+#salary-page .numrow { display:flex; align-items:center; padding:9px 0; border-bottom:0.5px solid var(--s-numrow-sep); }
+.numrow:last-child { border-bottom:none; }
+#salary-page .numrow-name { font-size:14px; font-weight:600; color:var(--s-fg2); width:36px; flex-shrink:0; }
+#salary-page .numrow-apr { font-size:15px; font-weight:600; color:var(--s-blue2); flex:1; text-align:right; }
+#salary-page .numrow-arrow { font-size:13px; color:var(--s-fg4); padding:0 8px; flex-shrink:0; }
+#salary-page .numrow-may { font-size:15px; font-weight:700; flex:1; text-align:left; }
+#salary-page .numrow-may.up { color:var(--s-red); }
+#salary-page .numrow-may.dn { color:var(--s-green); }
+#salary-page .numrow-may.neu { color:var(--s-blue2); }
+#salary-page .numrow-may.neg { color:var(--s-red); }
+#salary-page .numrow-tag { font-size:11px; font-weight:600; padding:2px 6px; border-radius:6px; flex-shrink:0; }
+#salary-page .numrow-tag.up { background:var(--s-tag-up-bg);  color:var(--s-red); }
+#salary-page .numrow-tag.dn { background:var(--s-tag-dn-bg);  color:var(--s-green); }
+#salary-page .numrow-tag.neu { background:var(--s-tag-neu-bg); color:var(--s-blue2); }
+#salary-page .numrow-tag.neg { background:var(--s-tag-up-bg);  color:var(--s-red); }
+#salary-page .close-btn {
+  display:block; width:calc(100% - 32px);
+  margin:10px 16px 0; padding:15px; border-radius:14px;
+  background:var(--s-close-btn); color:#fff;
+  font-size:16px; font-weight:600; font-family:inherit; border:none; cursor:pointer;
+}
+#salary-page .pending-footer {
+  margin:14px 16px 0; background:var(--s-tint-orange);
+  border-radius:14px; padding:13px 16px;
+  border:0.5px solid rgba(255,149,0,0.35);
+}
+#salary-page .pending-footer-title { font-size:13px; font-weight:700; color:var(--s-orange); margin-bottom:6px; }
+#salary-page .pending-footer-item { font-size:13px; color:var(--s-fg3); line-height:1.9; }
+/* ── YEAR CALENDAR OVERLAY ── */
+#salary-page .cal-overlay {
+  position:fixed; inset:0; z-index:200;
+  background:var(--s-overlay-bg);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity 0.25s;
+}
+#salary-page .cal-overlay.show { opacity:1; pointer-events:all; }
+#salary-page .cal-sheet {
+  width:100%; border-radius:24px 24px 0 0;
+  background:var(--s-sheet-bg);
+  transform:translateY(100%);
+  transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:36px; max-height:80vh; overflow-y:auto;
+}
+#salary-page .cal-overlay.show .cal-sheet { transform:translateY(0); }
+#salary-page .cal-handle { width:36px; height:5px; background:var(--s-handle); border-radius:3px; margin:12px auto 8px; }
+#salary-page .cal-header { padding:4px 20px 16px; }
+#salary-page .cal-year { font-size:28px; font-weight:700; color:var(--s-fg); }
+#salary-page .cal-subtitle { font-size:14px; color:var(--s-fg4); margin-top:2px; }
+#salary-page .cal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px; }
+#salary-page .cal-cell {
+  border-radius:16px; padding:14px 12px 16px;
+  display:flex; flex-direction:column;
+  min-height:72px; position:relative; transition:transform 0.15s;
+}
+#salary-page .cal-cell.has-data { cursor:pointer; }
+.cal-cell.has-data:active { transform:scale(0.94); }
+#salary-page .cal-cell.empty { background:var(--s-bg3); opacity:0.5; }
+#salary-page .cal-cell.active-month { box-shadow:0 0 0 2.5px var(--s-blue); }
+#salary-page .cal-month-name { font-size:13px; font-weight:600; margin-bottom:6px; }
+#salary-page .cal-total { font-size:20px; font-weight:700; letter-spacing:-0.5px; margin-top:auto; }
+#salary-page .cal-diff { font-size:11px; font-weight:600; margin-top:3px; }
+#salary-page .cal-empty-label { font-size:12px; color:var(--s-fg4); margin-top:auto; }
+#salary-page .cal-dot { width:6px; height:6px; border-radius:50%; background:var(--s-blue); position:absolute; top:10px; right:10px; }
+`;
       document.head.appendChild(st);
     }
 
@@ -1501,7 +1844,7 @@ const My = {
             'stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>' +
           '返回</button>' +
         '<span style="font-size:16px;font-weight:700;color:' + fg + '">工资简报</span>' +
-      '</div>' + "<!-- Month nav bar -->\n<div class=\"month-nav\" id=\"sp-month-nav\"></div>\n\n<!-- KPI row -->\n<div class=\"kpi-row\" id=\"sp-kpi-row\"></div>\n\n<!-- Summary card -->\n<div class=\"summary-card\">\n  <div id=\"sp-summary-title\" class=\"summary-title\"></div>\n  <div id=\"sp-summary-text\" class=\"summary-text\"></div>\n</div>\n\n<!-- Filter tabs -->\n<div class=\"tabs\" id=\"sp-filter-tabs\">\n  <button class=\"tab active\" onclick=\"sp_filterCards('all',this)\">\u5168\u90e8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('THEONE',this)\">THEONE</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u76f4\u64ad',this)\">\u76f4\u64ad</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u526a\u8f91\u53f7',this)\">\u526a\u8f91\u53f7</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u9648\u5148\u751f',this)\">\u9648\u5148\u751f\u9879\u76ee</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u4ed3\u5e93',this)\">\u4ed3\u5e93</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u552e\u540e',this)\">\u552e\u540e</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('up',this)\">\u2191 \u4e0a\u6da8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('dn',this)\">\u2193 \u4e0b\u964d</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('neu',this)\">\u2192 \u4e0d\u53d8</button>\n\\n  <button class=\\\"tab\\\" onclick=\\\"sp_filterCards('high',this)\\\">\u6700\u9ad8</button>\\n  <button class=\\\"tab\\\" onclick=\\\"sp_filterCards('low',this)\\\">\u6700\u4f4e</button></div>\n\n<div id=\"sp-grid-container\"></div>\n<div id=\"sp-pending-footer-wrap\"></div>\n\n<!-- Person detail sheet -->\n<div class=\"overlay\" id=\"sp-overlay\" onclick=\"sp_closeSheet(event)\">\n  <div class=\"sheet\" id=\"sp-sheet\">\n    <div class=\"sheet-handle\"></div>\n    <div class=\"sheet-top\">\n      <div class=\"sheet-name\" id=\"sp-d-name\"></div><div id=\\\"sp-d-badge\\\"></div>\n      <div id=\"sp-d-compare\"></div>\n      <div id=\"sp-d-diff\" style=\"display:none\"></div>\n    </div>\n    <div class=\"reason-sec\">\n      <div class=\"reason-sec-title\">\u53d8\u5316\u539f\u56e0</div>\n      <div class=\"reason-text\" id=\"sp-d-reason\"></div>\n      <div id=\"sp-d-pending\"></div>\n    </div>\n    <div class=\"chart-sec\">\n      <div class=\"chart-title\">\u5de5\u8d44\u6784\u6210\u660e\u7ec6\u5bf9\u6bd4</div>\n      <div style=\"display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;\">\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;\"></div>\n        <div style=\"font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;\">\u4e0a\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;\">\u2192</div>\n        <div style=\"font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;\">\u672c\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;\">\u53d8\u5316</div>\n      </div>\n      <div id=\"sp-d-chart\"></div>\n    </div>\n    <button class=\"close-btn\" onclick=\"sp_closeSheet()\">\u5173\u95ed</button>\n  </div>\n</div>\n\n<!-- Year calendar overlay -->\n<div class=\"cal-overlay\" id=\"sp-cal-overlay\" onclick=\"sp_calOverlayClick(event)\">\n  <div class=\"cal-sheet\" id=\"sp-cal-sheet\">\n    <div class=\"cal-handle\"></div>\n    <div class=\"cal-header\">\n      <div class=\"cal-year\">2026</div>\n      <div class=\"cal-subtitle\">\u70b9\u51fb\u5df2\u6709\u6570\u636e\u7684\u6708\u4efd\u67e5\u770b\u7b80\u62a5</div>\n    </div>\n    <div class=\"cal-grid\" id=\"sp-cal-grid\"></div>\n    <button class=\"close-btn\" style=\"margin-top:16px;\" onclick=\"sp_closeCalendar()\">\u5173\u95ed</button>\n  </div>\n</div>";
+      '</div>' + "<!-- Month nav bar -->\n<div class=\"month-nav\" id=\"sp-month-nav\"></div>\n\n<!-- KPI row -->\n<div class=\"kpi-row\" id=\"sp-kpi-row\"></div>\n\n<!-- Summary card -->\n<div class=\"summary-card\">\n  <div id=\"sp-summary-title\" class=\"summary-title\"></div>\n  <div id=\"sp-summary-text\" class=\"summary-text\"></div>\n</div>\n\n<!-- Filter tabs -->\n<div class=\"tabs\" id=\"sp-filter-tabs\">\n  <button class=\"tab active\" onclick=\"sp_filterCards('all',this)\">\u5168\u90e8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('THEONE',this)\">THEONE</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u76f4\u64ad',this)\">\u76f4\u64ad</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u526a\u8f91\u53f7',this)\">\u526a\u8f91\u53f7</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u9648\u5148\u751f',this)\">\u9648\u5148\u751f\u9879\u76ee</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u4ed3\u5e93',this)\">\u4ed3\u5e93</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u552e\u540e',this)\">\u552e\u540e</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('up',this)\">\u2191 \u4e0a\u6da8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('dn',this)\">\u2193 \u4e0b\u964d</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('neu',this)\">\u2192 \u4e0d\u53d8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('high',this)\">\u6700\u9ad8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('low',this)\">\u6700\u4f4e</button></div>\n\n<div id=\"sp-grid-container\"></div>\n<div id=\"sp-pending-footer-wrap\"></div>\n\n<!-- Person detail sheet -->\n<div class=\"overlay\" id=\"sp-overlay\" onclick=\"sp_closeSheet(event)\">\n  <div class=\"sheet\" id=\"sp-sheet\">\n    <div class=\"sheet-handle\"></div>\n    <div class=\"sheet-top\">\n      <div class=\"sheet-name\" id=\"sp-d-name\"></div><div id=\\\"sp-d-badge\\\"></div>\n      <div id=\"sp-d-compare\"></div>\n      <div id=\"sp-d-diff\" style=\"display:none\"></div>\n    </div>\n    <div class=\"reason-sec\">\n      <div class=\"reason-sec-title\">\u53d8\u5316\u539f\u56e0</div>\n      <div class=\"reason-text\" id=\"sp-d-reason\"></div>\n      <div id=\"sp-d-pending\"></div>\n    </div>\n    <div class=\"chart-sec\">\n      <div class=\"chart-title\">\u5de5\u8d44\u6784\u6210\u660e\u7ec6\u5bf9\u6bd4</div>\n      <div style=\"display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;\">\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;\"></div>\n        <div style=\"font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;\">\u4e0a\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;\">\u2192</div>\n        <div style=\"font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;\">\u672c\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;\">\u53d8\u5316</div>\n      </div>\n      <div id=\"sp-d-chart\"></div>\n    </div>\n    <button class=\"close-btn\" onclick=\"sp_closeSheet()\">\u5173\u95ed</button>\n  </div>\n</div>\n\n<!-- Year calendar overlay -->\n<div class=\"cal-overlay\" id=\"sp-cal-overlay\" onclick=\"sp_calOverlayClick(event)\">\n  <div class=\"cal-sheet\" id=\"sp-cal-sheet\">\n    <div class=\"cal-handle\"></div>\n    <div class=\"cal-header\">\n      <div class=\"cal-year\">2026</div>\n      <div class=\"cal-subtitle\">\u70b9\u51fb\u5df2\u6709\u6570\u636e\u7684\u6708\u4efd\u67e5\u770b\u7b80\u62a5</div>\n    </div>\n    <div class=\"cal-grid\" id=\"sp-cal-grid\"></div>\n    <button class=\"close-btn\" style=\"margin-top:16px;\" onclick=\"sp_closeCalendar()\">\u5173\u95ed</button>\n  </div>\n</div>";
 
     // Build fresh module instance and render
     const mod = _buildSalaryModule();
