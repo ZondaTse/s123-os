@@ -852,8 +852,8 @@ function sp_renderKPI() {
   if (diff != null) {
     const sign = diff>0?'+':diff<0?'':' ';
     kpiHtml += `
-    <div class="kpi" style="background:${accentBg}">
-      <div class="kpi-label" style="color:${accentColor}">环比增幅</div>
+    <div class="kpi" style="background:${accentBg};cursor:pointer" onclick="sp_showTrend()">
+      <div class="kpi-label" style="color:${accentColor}">环比增幅 ›</div>
       <div class="kpi-val" style="color:${accentColor}">${diff>=0?'+':''}¥${Math.abs(diff).toLocaleString('zh-CN')}</div>
       <div style="font-size:12px;color:${accentColor};font-weight:600;margin-top:2px">${diff>=0?'+':''}${pct}%</div>
     </div>`;
@@ -1001,6 +1001,14 @@ function sp_openSheet(idx,list){
   const sheet = document.getElementById('sp-sheet');
   sheet.className = `sheet ${bgClass}`;
   document.getElementById('sp-d-name').textContent = p.name;
+  const badge = document.getElementById('sp-d-badge');
+  if (badge) {
+    if (p.may === 0 && p.apr > 0) {
+      badge.innerHTML = '<div style="display:flex;align-items:center;gap:5px;background:rgba(255,149,0,0.12);border:1.5px solid var(--s-orange);border-radius:10px;padding:5px 10px"><svg viewBox=\'0 0 24 24\' width=\'16\' height=\'16\' fill=\'none\' stroke=\'var(--s-orange)\' stroke-width=\'2.5\'><path d=\'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\'/><line x1=\'12\' y1=\'9\' x2=\'12\' y2=\'13\'/><line x1=\'12\' y1=\'17\' x2=\'12.01\' y2=\'17\'/></svg><span style=\'font-size:12px;font-weight:600;color:var(--s-orange)\'>停发</span></div>';
+    } else {
+      badge.innerHTML = '';
+    }
+  }
 
   // When no prev data: this-month cell is neutral blue, no tint on prev cell
   const mayBg    = diff==null ? 'var(--s-tint-blue)' : diff>0?'var(--s-tint-red)':diff<0?'var(--s-tint-green)':'var(--s-tint-blue)';
@@ -1022,6 +1030,7 @@ function sp_openSheet(idx,list){
         <div class="sheet-kpi-label" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">环比</div>
         <div class="sheet-kpi-sub" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
         <div class="sheet-kpi-val" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+      </div>
       </div>
     </div>`;
 
@@ -1474,7 +1483,7 @@ const My = {
             'stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>' +
           '返回</button>' +
         '<span style="font-size:16px;font-weight:700;color:' + fg + '">工资简报</span>' +
-      '</div>' + "<!-- Month nav bar -->\n<div class=\"month-nav\" id=\"sp-month-nav\"></div>\n\n<!-- KPI row -->\n<div class=\"kpi-row\" id=\"sp-kpi-row\"></div>\n\n<!-- Summary card -->\n<div class=\"summary-card\">\n  <div id=\"sp-summary-title\" class=\"summary-title\"></div>\n  <div id=\"sp-summary-text\" class=\"summary-text\"></div>\n</div>\n\n<!-- Filter tabs -->\n<div class=\"tabs\" id=\"sp-filter-tabs\">\n  <button class=\"tab active\" onclick=\"sp_filterCards('all',this)\">\u5168\u90e8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('THEONE',this)\">THEONE</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u76f4\u64ad',this)\">\u76f4\u64ad</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u526a\u8f91\u53f7',this)\">\u526a\u8f91\u53f7</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u9648\u5148\u751f',this)\">\u9648\u5148\u751f\u9879\u76ee</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u4ed3\u5e93',this)\">\u4ed3\u5e93</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u552e\u540e',this)\">\u552e\u540e</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('up',this)\">\u2191 \u4e0a\u6da8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('dn',this)\">\u2193 \u4e0b\u964d</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('neu',this)\">\u2192 \u4e0d\u53d8</button>\n</div>\n\n<div id=\"sp-grid-container\"></div>\n<div id=\"sp-pending-footer-wrap\"></div>\n\n<!-- Person detail sheet -->\n<div class=\"overlay\" id=\"sp-overlay\" onclick=\"sp_closeSheet(event)\">\n  <div class=\"sheet\" id=\"sp-sheet\">\n    <div class=\"sheet-handle\"></div>\n    <div class=\"sheet-top\">\n      <div class=\"sheet-name\" id=\"sp-d-name\"></div>\n      <div id=\"sp-d-compare\"></div>\n      <div id=\"sp-d-diff\" style=\"display:none\"></div>\n    </div>\n    <div class=\"reason-sec\">\n      <div class=\"reason-sec-title\">\u53d8\u5316\u539f\u56e0</div>\n      <div class=\"reason-text\" id=\"sp-d-reason\"></div>\n      <div id=\"sp-d-pending\"></div>\n    </div>\n    <div class=\"chart-sec\">\n      <div class=\"chart-title\">\u5de5\u8d44\u6784\u6210\u660e\u7ec6\u5bf9\u6bd4</div>\n      <div style=\"display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;\">\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;\"></div>\n        <div style=\"font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;\">\u4e0a\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;\">\u2192</div>\n        <div style=\"font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;\">\u672c\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;\">\u53d8\u5316</div>\n      </div>\n      <div id=\"sp-d-chart\"></div>\n    </div>\n    <button class=\"close-btn\" onclick=\"sp_closeSheet()\">\u5173\u95ed</button>\n  </div>\n</div>\n\n<!-- Year calendar overlay -->\n<div class=\"cal-overlay\" id=\"sp-cal-overlay\" onclick=\"sp_calOverlayClick(event)\">\n  <div class=\"cal-sheet\" id=\"sp-cal-sheet\">\n    <div class=\"cal-handle\"></div>\n    <div class=\"cal-header\">\n      <div class=\"cal-year\">2026</div>\n      <div class=\"cal-subtitle\">\u70b9\u51fb\u5df2\u6709\u6570\u636e\u7684\u6708\u4efd\u67e5\u770b\u7b80\u62a5</div>\n    </div>\n    <div class=\"cal-grid\" id=\"sp-cal-grid\"></div>\n    <button class=\"close-btn\" style=\"margin-top:16px;\" onclick=\"sp_closeCalendar()\">\u5173\u95ed</button>\n  </div>\n</div>";
+      '</div>' + "<!-- Month nav bar -->\n<div class=\"month-nav\" id=\"sp-month-nav\"></div>\n\n<!-- KPI row -->\n<div class=\"kpi-row\" id=\"sp-kpi-row\"></div>\n\n<!-- Summary card -->\n<div class=\"summary-card\">\n  <div id=\"sp-summary-title\" class=\"summary-title\"></div>\n  <div id=\"sp-summary-text\" class=\"summary-text\"></div>\n</div>\n\n<!-- Filter tabs -->\n<div class=\"tabs\" id=\"sp-filter-tabs\">\n  <button class=\"tab active\" onclick=\"sp_filterCards('all',this)\">\u5168\u90e8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('THEONE',this)\">THEONE</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u76f4\u64ad',this)\">\u76f4\u64ad</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u526a\u8f91\u53f7',this)\">\u526a\u8f91\u53f7</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u9648\u5148\u751f',this)\">\u9648\u5148\u751f\u9879\u76ee</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u4ed3\u5e93',this)\">\u4ed3\u5e93</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('\u552e\u540e',this)\">\u552e\u540e</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('up',this)\">\u2191 \u4e0a\u6da8</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('dn',this)\">\u2193 \u4e0b\u964d</button>\n  <button class=\"tab\" onclick=\"sp_filterCards('neu',this)\">\u2192 \u4e0d\u53d8</button>\n</div>\n\n<div id=\"sp-grid-container\"></div>\n<div id=\"sp-pending-footer-wrap\"></div>\n\n<!-- Person detail sheet -->\n<div class=\"overlay\" id=\"sp-overlay\" onclick=\"sp_closeSheet(event)\">\n  <div class=\"sheet\" id=\"sp-sheet\">\n    <div class=\"sheet-handle\"></div>\n    <div class=\"sheet-top\">\n      <div class=\"sheet-name\" id=\"sp-d-name\"></div><div id=\\\"sp-d-badge\\\"></div>\n      <div id=\"sp-d-compare\"></div>\n      <div id=\"sp-d-diff\" style=\"display:none\"></div>\n    </div>\n    <div class=\"reason-sec\">\n      <div class=\"reason-sec-title\">\u53d8\u5316\u539f\u56e0</div>\n      <div class=\"reason-text\" id=\"sp-d-reason\"></div>\n      <div id=\"sp-d-pending\"></div>\n    </div>\n    <div class=\"chart-sec\">\n      <div class=\"chart-title\">\u5de5\u8d44\u6784\u6210\u660e\u7ec6\u5bf9\u6bd4</div>\n      <div style=\"display:flex;align-items:center;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);margin-bottom:4px;\">\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;width:36px;\"></div>\n        <div style=\"font-size:11px;font-weight:600;color:#5b9fd6;flex:1;text-align:right;\">\u4e0a\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;padding:0 8px;flex:none;\">\u2192</div>\n        <div style=\"font-size:11px;font-weight:600;color:#1c1c1e;flex:1;text-align:left;\">\u672c\u6708</div>\n        <div style=\"font-size:11px;font-weight:600;color:#8e8e93;flex:none;min-width:48px;text-align:right;\">\u53d8\u5316</div>\n      </div>\n      <div id=\"sp-d-chart\"></div>\n    </div>\n    <button class=\"close-btn\" onclick=\"sp_closeSheet()\">\u5173\u95ed</button>\n  </div>\n</div>\n\n<!-- Year calendar overlay -->\n<div class=\"cal-overlay\" id=\"sp-cal-overlay\" onclick=\"sp_calOverlayClick(event)\">\n  <div class=\"cal-sheet\" id=\"sp-cal-sheet\">\n    <div class=\"cal-handle\"></div>\n    <div class=\"cal-header\">\n      <div class=\"cal-year\">2026</div>\n      <div class=\"cal-subtitle\">\u70b9\u51fb\u5df2\u6709\u6570\u636e\u7684\u6708\u4efd\u67e5\u770b\u7b80\u62a5</div>\n    </div>\n    <div class=\"cal-grid\" id=\"sp-cal-grid\"></div>\n    <button class=\"close-btn\" style=\"margin-top:16px;\" onclick=\"sp_closeCalendar()\">\u5173\u95ed</button>\n  </div>\n</div>";
 
     // Build fresh module instance and render
     const mod = _buildSalaryModule();
@@ -1535,4 +1544,44 @@ const My = {
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function sp_showTrend() {
+  const overlay = document.getElementById('sp-trend-overlay');
+  if (!overlay) return;
+  // Build SVG line chart from monthMeta data
+  const months = Object.keys(monthMeta).map(Number).sort((a,b)=>a-b);
+  const totals = months.map(m => monthMeta[m].total);
+  const labels = months.map(m => m + '月');
+  const W = 300, H = 120, pad = 20;
+  const minV = Math.min(...totals) * 0.98;
+  const maxV = Math.max(...totals) * 1.02;
+  const scaleX = i => pad + i * (W - pad*2) / (months.length - 1 || 1);
+  const scaleY = v => H - pad - (v - minV) / (maxV - minV) * (H - pad*2);
+  const pts = totals.map((v,i) => `${scaleX(i)},${scaleY(v)}`).join(' ');
+  const accentColor = totals[totals.length-1] >= totals[0] ? 'var(--s-red)' : 'var(--s-green)';
+  const content = document.getElementById('sp-trend-content');
+  content.innerHTML = `
+    <div style="font-size:17px;font-weight:700;color:var(--s-fg);margin-bottom:16px;padding-top:4px">工资总额趋势</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible">
+      <defs>
+        <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${accentColor}" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="${accentColor}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M${pts.split(' ').join(' L')} L${scaleX(months.length-1)},${H-pad} L${scaleX(0)},${H-pad} Z" fill="url(#trendGrad)"/>
+      <polyline points="${pts}" fill="none" stroke="${accentColor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${totals.map((v,i) => `
+        <circle cx="${scaleX(i)}" cy="${scaleY(v)}" r="4" fill="${accentColor}"/>
+        <text x="${scaleX(i)}" y="${scaleY(v)-10}" text-anchor="middle" font-size="10" fill="var(--s-fg3)">¥${Math.round(v/1000)}k</text>
+        <text x="${scaleX(i)}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--s-fg4)">${labels[i]}</text>
+      `).join('')}
+    </svg>
+  `;
+  overlay.classList.add('show');
+}
+function sp_closeTrend(e) {
+  if (e && e.target !== document.getElementById('sp-trend-overlay')) return;
+  document.getElementById('sp-trend-overlay').classList.remove('show');
 }
