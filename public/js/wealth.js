@@ -1538,7 +1538,7 @@ const My = {
   --s-kpi-prev-fg: #5b9fd6;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --s-bg:           #000000;
     --s-bg2:          #1c1c1e;
     --s-bg3:          #2c2c2e;
