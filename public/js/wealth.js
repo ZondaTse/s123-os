@@ -1426,10 +1426,13 @@ const My = {
     // Build fresh module instance and render
     const mod = _buildSalaryModule();
     window._salaryMod = mod;
-    mod.renderMonthNav();
-    mod.renderKPI();
-    mod.renderSummary();
-    mod.renderCards('all');
+    // 用requestAnimationFrame确保innerHTML已渲染到DOM再执行
+    requestAnimationFrame(() => {
+      mod.renderMonthNav();
+      mod.renderKPI();
+      mod.renderSummary();
+      mod.renderCards('all');
+    });
   },
 
   closeSalary() {
@@ -1437,6 +1440,7 @@ const My = {
     if (page) page.style.display = 'none';
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = '';
+    My.render();
   },
 
   async manageSalaryAccess() {
