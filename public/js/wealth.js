@@ -1538,7 +1538,7 @@ const My = {
   --s-kpi-prev-fg: #5b9fd6;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --s-bg:           #000000;
     --s-bg2:          #1c1c1e;
     --s-bg3:          #2c2c2e;
@@ -1597,6 +1597,65 @@ const My = {
     --s-kpi-prev-bg: rgba(64,156,255,0.12);
     --s-kpi-prev-fg: #409cff;
   }
+}
+[data-theme="dark"] {
+    --s-bg:           #000000;
+    --s-bg2:          #1c1c1e;
+    --s-bg3:          #2c2c2e;
+    --s-bg4:          #3a3a3c;
+    --s-fg:           #ffffff;
+    --s-fg2:          #ebebf5;
+    --s-fg3:          #aeaeb2;
+    --s-fg4:          #636366;
+    --s-fg5:          #48484a;
+    --s-sep:          rgba(255,255,255,0.08);
+    --s-shadow:       0 1px 0 rgba(255,255,255,0.04);
+    --s-shadow-lg:    0 4px 20px rgba(0,0,0,0.5);
+    --s-nav-bg:       rgba(0,0,0,0.85);
+    --s-sheet-bg:     #1c1c1e;
+    --s-overlay-bg:   rgba(0,0,0,0.55);
+    --s-handle:       rgba(255,255,255,0.18);
+    --s-close-btn:    #0a84ff;
+    --s-red:    #ff453a;
+    --s-green:  #30d158;
+    --s-blue:   #0a84ff;
+    --s-blue2:  #409cff;
+    --s-orange: #ff9f0a;
+    --s-tint-red:    rgba(255,69,58,0.15);
+    --s-tint-green:  rgba(48,209,88,0.12);
+    --s-tint-blue:   rgba(10,132,255,0.15);
+    --s-tint-orange: rgba(255,159,10,0.12);
+    --s-tag-up-bg:  rgba(255,69,58,0.18);
+    --s-tag-dn-bg:  rgba(48,209,88,0.15);
+    --s-tag-neu-bg: rgba(10,132,255,0.18);
+    --s-numrow-sep: rgba(255,255,255,0.07);
+    --dept-lavender: #28252e;
+    --dept-sage:     #22282a;
+    --dept-sky:      #1e2530;
+    --dept-sand:     #2a2620;
+    --dept-lilac:    #28252e;
+    --dept-mint:     #1e2a26;
+    --dept-stone:    #2a2028;
+    --dept-ice:      #1e252a;
+    --banner-lavender: #312d3a;
+    --banner-sage:     #293030;
+    --banner-sky:      #243040;
+    --banner-sand:     #332e26;
+    --banner-lilac:    #312d3a;
+    --banner-mint:     #253430;
+    --banner-stone:    #342830;
+    --banner-ice:      #243038;
+    --border-lavender: #48405a;
+    --border-sage:     #3a4a3e;
+    --border-sky:      #304858;
+    --border-sand:     #4a4034;
+    --border-lilac:    #48405a;
+    --border-mint:     #305048;
+    --border-stone:    #4a3840;
+    --border-ice:      #2e4458;
+    --s-panel-bg: rgba(44,44,46,0.9);
+    --s-kpi-prev-bg: rgba(64,156,255,0.12);
+    --s-kpi-prev-fg: #409cff;
 }
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 #salary-page body {
