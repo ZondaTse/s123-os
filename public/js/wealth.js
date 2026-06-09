@@ -860,8 +860,8 @@ function sp_renderKPI() {
   } else {
     kpiHtml += `
     <div class="kpi" style="background:#e8f2fb">
-      <div class="kpi-label" style="color:#5b9fd6">人员数量</div>
-      <div class="kpi-val" style="color:#5b9fd6">${meta.people.length}人</div>
+      <div class="kpi-label" style="color:#5b9fd6">环比增幅</div>
+      <div class="kpi-val" style="color:#5b9fd6">--</div>
     </div>`;
   }
   document.getElementById('sp-kpi-row').innerHTML = kpiHtml;
