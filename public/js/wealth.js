@@ -1062,7 +1062,7 @@ function sp_openSheet(idx,list){
           '<div class="sheet-kpi-val" style="color:' + mayColor + '">¥' + sp_fmt(p.may) + '</div>' +
         '</div>' +
         '<div class="sheet-kpi" style="background:' + diffBg + '">' +
-          '<div class="sheet-kpi-label" style="color:' + diffColor + '">环比</div>' +
+          '<div class="sheet-kpi-label" style="color:' + diffColor + '">环比 ' + (hasApr ? diffPct : '') + '</div>' +
           '<div class="sheet-kpi-val" style="color:' + diffColor + '">' + diffAmt + '</div>' +
         '</div>' +
       '</div>';
