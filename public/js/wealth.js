@@ -794,6 +794,12 @@ function sp_switchMonth(m) {
 function sp_renderMonthNav() {
   const nav = document.getElementById('sp-month-nav');
   nav.innerHTML = '';
+  const calBtn = document.createElement('button');
+  calBtn.className = 'month-chip';
+  calBtn.style.cssText = 'background:var(--s-blue);color:#fff;padding:6px 11px;border-radius:20px;display:flex;align-items:center;justify-content:center;';
+  calBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  calBtn.onclick = sp_openCalendar;
+  nav.appendChild(calBtn);
 
   AVAILABLE_MONTHS.forEach(m => {
     const btn = document.createElement('button');
@@ -948,7 +954,7 @@ function sp_makeCard(p,i,list){
   const diff = hasApr ? p.may - p.apr : null;
   const sign = diff!=null ? (diff>0?'+':diff<0?'-':'') : '';
   const diffClass = diff==null ? 'diff-neu' : diff>0?'diff-up':diff<0?'diff-dn':'diff-neu';
-  const diffDisplay = diff==null ? '—' : diff===0 ? '—' : `${sign}${sp_fmt(diff)}`;
+  const diffDisplay = diff==null ? '—' : diff===0 ? '—' : `${diff>0?'+¥':'-¥'}${sp_fmt(diff)}`;
   const mayClass = diff==null ? 'may-neu' : diff>0?'may-up':diff<0?'may-dn':'may-neu';
   const warnDot = p.type==='warn'?'<span class="warn-dot"></span>':'';
   const bgClass = deptBg[p.dept]||'';
@@ -1044,8 +1050,9 @@ function sp_openSheet(idx,list){
       </div>
       <div class="sheet-kpi" style="background:${diff==null?'var(--s-bg3)':diff>0?'var(--s-tint-red)':diff<0?'var(--s-tint-green)':'var(--s-bg3)'}">
         <div class="sheet-kpi-label" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">环比</div>
-        <div class="sheet-kpi-sub" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
-        <div class="sheet-kpi-val" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+        <div style="font-size:12px;font-weight:600;color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'};margin-top:2px">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+        <div class="sheet-kpi-val" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>0?'+¥':diff<0?'-¥':'¥')+Math.abs(diff).toLocaleString('zh-CN'):'—'}</div>
+      </div>
       </div>
       </div>
     </div>`;
