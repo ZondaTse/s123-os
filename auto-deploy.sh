@@ -1,5 +1,5 @@
 #!/bin/bash
-# 自动部署脚本：从GitHub raw拉最新文件（并发下载）
+# 自动部署脚本：从GitHub raw拉最新文件（安全下载，防截断）
 BASE="https://raw.githubusercontent.com/ZondaTse/s123-os/main"
 DIR="/root/s123"
 FILES=(
@@ -15,9 +15,25 @@ FILES=(
   "public/salary-app.js" "public/salary-styles.css"
 )
 
-# 并发下载
+# 安全下载：先存临时文件，成功才覆盖原文件
+safe_download() {
+  local f="$1"
+  local tmp="$DIR/$f.tmp"
+  local dest="$DIR/$f"
+  if curl -sf --max-time 15 "$BASE/$f" -o "$tmp"; then
+    # 检查下载文件非空
+    if [ -s "$tmp" ]; then
+      mv "$tmp" "$dest"
+    else
+      rm -f "$tmp"
+    fi
+  else
+    rm -f "$tmp"
+  fi
+}
+
 for f in "${FILES[@]}"; do
-  curl -sf --max-time 10 "$BASE/$f" -o "$DIR/$f" &
+  safe_download "$f" &
 done
 wait
 
