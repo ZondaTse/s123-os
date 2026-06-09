@@ -1276,7 +1276,7 @@ const My = {
       <div class="menu-group">
         <div class="menu-row" onclick="My.openSalary()">
           <div class="menu-icon" style="background:#e8f5e9"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#34c759" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 7v1m0 8v1M9.5 9.5C9.5 8.4 10.6 8 12 8s2.5.4 2.5 1.5S13.4 11 12 11s-2.5.6-2.5 1.5S10.6 16 12 16s2.5-.4 2.5-1.5"/></svg></div>
-          <div class="menu-row-label" style="font-weight:600">我的财务</div>
+          <div class="menu-row-label" style="font-weight:600">工资简报</div>
           <span class="menu-arrow" style="color:#34c759">›</span>
         </div>
       </div>
