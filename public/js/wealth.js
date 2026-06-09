@@ -1018,10 +1018,10 @@ function sp_openSheet(idx,list){
         <div class="sheet-kpi-label" style="color:${mayColor}">本月实发</div>
         <div class="sheet-kpi-val" style="color:${mayColor}">¥${sp_fmt(p.may)}</div>
       </div>
-      <div class="sheet-kpi" style="background:var(--s-bg3)">
-        <div class="sheet-kpi-label" style="color:var(--s-fg4)">环比</div>
-        <div class="sheet-kpi-sub" style="color:var(--s-fg4)">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
-        <div class="sheet-kpi-val" style="color:var(--s-fg4)">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
+      <div class="sheet-kpi" style="background:${diff==null?'var(--s-bg3)':diff>0?'var(--s-tint-red)':diff<0?'var(--s-tint-green)':'var(--s-bg3)'}">
+        <div class="sheet-kpi-label" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">环比</div>
+        <div class="sheet-kpi-sub" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+`¥${Math.abs(diff).toLocaleString('zh-CN')}`:'—'}</div>
+        <div class="sheet-kpi-val" style="color:${diff==null?'var(--s-fg4)':diff>0?'var(--s-red)':diff<0?'var(--s-green)':'var(--s-fg4)'}">${hasApr?(diff>=0?'+':'')+Math.abs(pctVal)+'%':'—'}</div>
       </div>
     </div>`;
 
