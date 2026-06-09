@@ -997,6 +997,10 @@ function sp_openSheet(idx,list){
   const bgClass = deptBg[p.dept]||'';
   const sheet = document.getElementById('sp-sheet');
   sheet.className = `sheet ${bgClass}`;
+  // 立即显示 overlay，动画马上开始，不等数据填充
+  const _overlay = document.getElementById('sp-overlay');
+  _overlay.classList.add('show');
+  document.body.style.overflow='hidden';
   // Inject dept + rule elements dynamically
   const _nameDiv = document.getElementById('sp-d-name');
   if (_nameDiv && !sheet.querySelector('.sp-dept-line')) {
@@ -1082,8 +1086,6 @@ function sp_openSheet(idx,list){
     rows+=`<div class="numrow"><div class="numrow-name">${b.n}</div><div class="numrow-apr">${ad}</div><div class="numrow-arrow">${arrow}</div><div class="numrow-may ${mc}">${md}</div><div class="numrow-tag ${tc}">${tt}</div></div>`;
   });
   document.getElementById('sp-d-chart').innerHTML=rows;
-  document.getElementById('sp-overlay').classList.add('show');
-  document.body.style.overflow='hidden';
 }
 function sp_closeSheet(e){
   if(e&&e.target!==document.getElementById('sp-overlay'))return;
