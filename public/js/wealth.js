@@ -905,7 +905,7 @@ const My = {
     if (page) page.style.display = 'none';
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.style.display = '';
-    this.render();
+    My.render();
   },
 
 
