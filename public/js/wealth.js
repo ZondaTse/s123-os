@@ -747,7 +747,7 @@ function sp_renderMonthNav() {
   calBtn.className = 'month-chip';
   calBtn.style.cssText = 'background:var(--s-fg);color:var(--s-bg);padding:7px 14px;font-size:16px;';
   calBtn.textContent = '📅';
-  calBtn.onclick = openCalendar;
+  calBtn.onclick = sp_openCalendar;
   nav.appendChild(calBtn);
 
   AVAILABLE_MONTHS.forEach(m => {
