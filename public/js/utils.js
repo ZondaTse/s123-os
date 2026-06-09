@@ -131,8 +131,17 @@ function hideSheet(id) {
 }
 
 function initTheme() {
-  const theme = localStorage.getItem('s123_theme') || 'light';
+  const saved = localStorage.getItem('s123_theme');
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
+  if (!saved) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('s123_theme')) {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        updateThemeIcon && updateThemeIcon();
+      }
+    });
+  }
   return theme;
 }
 
